@@ -2,8 +2,7 @@
   <el-container class="layout">
     <el-aside
         class="aside"
-        :class="asideClass"
-        :style="{ width: asideWidth }">
+        :class="asideClass">
       <Aside />
     </el-aside>
     <div
@@ -34,11 +33,6 @@ import writer from '@/layout/write/index.vue'
 const uiStore = useUiStore();
 const writerRef = ref({})
 const isMobile = ref(window.innerWidth < 1025)
-
-const asideWidth = computed(() => {
-    if (isMobile.value) return '260px'
-    return uiStore.asideCollapsed ? '60px' : '260px'
-})
 
 const asideClass = computed(() => {
     if (isMobile.value) {
@@ -77,17 +71,19 @@ onBeforeUnmount(() => {
 }
 
 .el-aside {
-  transition: width 200ms ease, transform 200ms ease;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .aside-collapsed {
-  width: 60px;
+  transform: translateX(-100%);
+  width: 0 !important;
 }
 
 .aside-expanded {
   width: 260px;
   box-shadow: var(--aside-right-border);
+  transform: translateX(0);
+  transition: transform 150ms ease;
 }
 
 .aside-drawer-open {
@@ -98,7 +94,7 @@ onBeforeUnmount(() => {
   width: 260px;
   z-index: 101;
   transform: translateX(0);
-  transition: transform 200ms ease;
+  transition: transform 150ms ease;
   box-shadow: var(--aside-right-border);
 }
 
@@ -110,7 +106,7 @@ onBeforeUnmount(() => {
   width: 260px;
   z-index: 101;
   transform: translateX(-100%);
-  transition: transform 200ms ease;
+  transition: transform 150ms ease;
 }
 
 .main-container {
@@ -138,6 +134,6 @@ onBeforeUnmount(() => {
   height: 100vh;
   background: rgba(0, 0, 0, 0.4);
   z-index: 99;
-  transition: opacity 0.3s;
+  transition: opacity 150ms;
 }
 </style>

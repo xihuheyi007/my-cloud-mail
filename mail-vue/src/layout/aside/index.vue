@@ -1,12 +1,11 @@
 <template>
   <el-scrollbar class="scroll">
     <div>
-      <div class="title" :class="{ 'title-collapsed': collapsed }">
+      <div class="title">
         <Icon icon="mdi:email-outline" width="24" height="24" />
-        <div v-show="!collapsed">{{ settingStore.settings.title }}</div>
+        <div>{{ settingStore.settings.title }}</div>
       </div>
       <el-menu
-          :collapse="collapsed"
           :background-color="menuBgColor"
           :text-color="menuTextColor"
           :active-text-color="activeTextColor"
@@ -97,22 +96,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import router from "@/router/index.js"
 import { useRoute } from "vue-router"
 import { Icon } from "@iconify/vue"
 import { useSettingStore } from "@/store/setting.js"
-import { useUiStore } from "@/store/ui.js"
 
 const settingStore = useSettingStore()
 const route = useRoute()
-const uiStore = useUiStore()
 
-const collapsed = computed(() => uiStore.asideCollapsed)
-
-const menuBgColor = computed(() => 'var(--aside-background)')
-const menuTextColor = computed(() => 'var(--aside-menu-text)')
-const activeTextColor = computed(() => 'var(--aside-active-text)')
+const menuBgColor = 'var(--aside-background)'
+const menuTextColor = 'var(--aside-menu-text)'
+const activeTextColor = 'var(--aside-active-text)'
 </script>
 
 <style lang="scss" scoped>
@@ -126,16 +120,9 @@ const activeTextColor = computed(() => 'var(--aside-active-text)')
   gap: 8px;
   color: var(--aside-title-text);
   background: var(--aside-title-bg);
-  transition: all 0.3s ease;
   max-width: 240px;
   padding: 0 12px;
   overflow: hidden;
-
-  &.title-collapsed {
-    max-width: 40px;
-    padding: 0;
-    margin: 15px auto;
-  }
 
   > div {
     overflow: hidden;
@@ -157,21 +144,12 @@ const activeTextColor = computed(() => 'var(--aside-active-text)')
   color: var(--aside-menu-text);
   font-size: 12px;
   opacity: 0.7;
-  transition: opacity 0.2s;
-
-  .title-collapsed + & {
-    display: none;
-  }
 }
 
 :deep(.el-menu-item) {
   margin: 4px 8px;
   border-radius: 8px;
   height: 40px;
-}
-
-:deep(.el-menu--collapse) {
-  width: 60px;
 }
 
 .choose-item {
