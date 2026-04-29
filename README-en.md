@@ -1,23 +1,23 @@
 <p align="center">
     <img src="doc/demo/logo.png" width="80px" />
     <h1 align="center">Cloud Mail</h1>
-    <p align="center">A simple, responsive email service designed to run on Cloudflare Workers 🎉</p> 
+    <p align="center">A simple, responsive email service designed to run on Cloudflare Workers 🎉</p>
     <p align="center">
-       <a href="/README.md" style="margin-left: 5px">简体中文</a> | English 
+       <a href="/README.md" style="margin-left: 5px">简体中文</a> | English
     </p>
     <p align="center">
         <a href="https://github.com/maillab/cloud-mail/tree/main?tab=MIT-1-ov-file" target="_blank" >
             <img src="https://img.shields.io/badge/license-MIT-green" />
-        </a>    
+        </a>
         <a href="https://github.com/maillab/cloud-mail/releases" target="_blank" >
             <img src="https://img.shields.io/github/v/release/maillab/cloud-mail" alt="releases" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/issues" >
             <img src="https://img.shields.io/github/issues/maillab/cloud-mail" alt="issues" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/stargazers" target="_blank">
             <img src="https://img.shields.io/github/stars/maillab/cloud-mail" alt="stargazers" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/forks" target="_blank" >
             <img src="https://img.shields.io/github/forks/maillab/cloud-mail" alt="forks" />
         </a>
@@ -29,68 +29,51 @@
     </p>
 </p>
 
+> ⚠️ **This project is a modified version of [maillab/cloud-mail](https://github.com/maillab/cloud-mail), inheriting all its features.**
+
+---
+
+## Modification Notes
+
+This project includes the following UI improvements:
+
+### 🌗 Theme Mode Upgrade
+
+- **Three theme modes**: Light / Dark / System
+- **Auto-switch**: Listen to system theme preferences and respond in real-time
+- **Persistent storage**: User's theme preference is automatically saved
+
+### 📂 Sidebar Optimization
+
+- **Collapsed by default**: Sidebar collapses to icon mode (60px width)
+- **Expand on demand**: Click hamburger button to expand full menu
+- **Color adaptation**: Light background in light mode, dark background in dark mode
+- **Smooth animations**: Smooth transition animations for collapse/expand
+
+### 🎨 Modern UI Design
+
+- **Card layout**: Email list uses modern card design with rounded corners and shadows
+- **Hover effects**: Subtle shadow lift effect on card hover
+- **Unified colors**: All using CSS variables for easy theme switching
+
+### 🔧 Technical Improvements
+
+- **State management refactored**: Separated desktop collapse state from mobile drawer state
+- **Theme Composable**: New `useTheme.js` for unified theme management
+- **Code maintainability**: Removed hardcoded color values, unified CSS variables
+
+---
+
 ## Description
+
 With only one domain, you can create multiple different email addresses, similar to major email platforms. This project can be deployed on Cloudflare Workers to reduce server costs and build your own email service.
-## Project Showcase
-
-- [Live Demo](https://skymail.ink)<br>
-- [Deployment Guide](https://doc.skymail.ink/en/)<br>
-
-
-| ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
-|--------------------------|--------------------------|
-| ![](/doc/demo/demo3.png) | ![](/doc/demo/demo4.png) |
-
-## Features
-
-- **💰 Low-Cost Usage**: No server required — deploy to Cloudflare Workers to reduce costs.
-
-- **💻 Responsive Design**: Automatically adapts to both desktop and most mobile browsers.
-
-- **📧 Email Sending**: Integrated with Resend, supporting bulk email sending and attachments.
-
-- **🛡️ Admin Features**: Admin controls for user and email management with RBAC-based access control.
-
-- **📦 Attachment Support**: Send and receive attachments, stored and downloaded via R2 object storage.
-
-- **🔔 Email Push**: Forward received emails to Telegram bots or other email providers.
-
-- **📡 Open API**: Supports batch user creation via API and multi-condition email queries
-
-- **📈 Data Visualization**: Use ECharts to visualize system data, including user email growth.
-
-- **🎨 Personalization**: Customize website title, login background, and transparency.
-
-- **🤖 CAPTCHA**: Integrated with Turnstile CAPTCHA to prevent automated registration.
-
-- **📜 More Features**: Under development...
-
-## Tech Stack
-
-- **Platform**: [Cloudflare Workers](https://developers.cloudflare.com/workers/)
-
-- **Web Framework**: [Hono](https://hono.dev/)
-
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
-
-- **Frontend Framework**: [Vue3](https://vuejs.org/)
-
-- **UI Framework**: [Element Plus](https://element-plus.org/)
-
-- **Email Service**: [Resend](https://resend.com/)
-
-- **Cache**: [Cloudflare KV](https://developers.cloudflare.com/kv/)
-
-- **Database**: [Cloudflare D1](https://developers.cloudflare.com/d1/)
-
-- **File Storage**: [Cloudflare R2](https://developers.cloudflare.com/r2/)
 
 ## Project Structure
 
 ```
 cloud-mail
 ├── mail-worker				    # Backend worker project
-│   ├── src                  
+│   ├── src
 │   │   ├── api	 			    # API layer
 │   │   ├── const  			    # Project constants
 │   │   ├── dao                 # Data access layer
@@ -109,10 +92,11 @@ cloud-mail
 │   ├── package.json			# Project dependencies
 │   └── wrangler.toml			# Project configuration
 │
-├─ mail-vue				        # Frontend Vue project
+├── mail-vue				    # Frontend Vue project
 │   ├── src
 │   │   ├── axios 			    # Axios configuration
 │   │   ├── components			# Custom components
+│   │   ├── composables			# Composables (new: useTheme)
 │   │   ├── echarts			    # ECharts integration
 │   │   ├── i18n			    # Internationalization
 │   │   ├── init			    # Startup initialization
@@ -126,21 +110,10 @@ cloud-mail
 │   │   ├── app.vue			    # Root component
 │   │   ├── main.js			    # Entry JS file
 │   │   └── style.css			# Global styles
-│   ├── package.json			# Project dependencies
-└── └── env.release				# Environment configuration
-
+│   └── package.json			# Project dependencies
+└── env.release					# Environment configuration
 ```
-
-## Support
-
-<a href="https://doc.skymail.ink/support.html">
-<img width="170px" src="./doc/images/support.png" alt="">
-</a>
 
 ## License
 
 This project is licensed under the [MIT](LICENSE) license.
-
-## Communication
-
-[Telegram](https://t.me/cloud_mail_tg)

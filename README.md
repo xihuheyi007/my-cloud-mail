@@ -1,23 +1,23 @@
 <p align="center">
     <img src="doc/demo/logo.png" width="80px" />
     <h1 align="center">Cloud Mail</h1>
-    <p align="center">基于 Cloudflare 的简约响应式邮箱服务，支持邮件发送、附件收发 🎉</p> 
+    <p align="center">基于 Cloudflare 的简约响应式邮箱服务，支持邮件发送、附件收发 🎉</p>
     <p align="center">
         简体中文 | <a href="/README-en.md" style="margin-left: 5px">English </a>
     </p>
     <p align="center">
         <a href="https://github.com/maillab/cloud-mail/tree/main?tab=MIT-1-ov-file" target="_blank" >
             <img src="https://img.shields.io/badge/license-MIT-green" />
-        </a>    
+        </a>
         <a href="https://github.com/maillab/cloud-mail/releases" target="_blank" >
             <img src="https://img.shields.io/github/v/release/maillab/cloud-mail" alt="releases" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/issues" >
             <img src="https://img.shields.io/github/issues/maillab/cloud-mail" alt="issues" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/stargazers" target="_blank">
             <img src="https://img.shields.io/github/stars/maillab/cloud-mail" alt="stargazers" />
-        </a>  
+        </a>
         <a href="https://github.com/maillab/cloud-mail/forks" target="_blank" >
             <img src="https://img.shields.io/github/forks/maillab/cloud-mail" alt="forks" />
         </a>
@@ -29,76 +29,48 @@
     </p>
 </p>
 
+> ⚠️ **本项目基于 [maillab/cloud-mail](https://github.com/maillab/cloud-mail) 修改而来，继承其所有功能。**
 
-## 项目简介
+---
 
-只需要一个域名，就可以创建多个不同的邮箱，类似各大邮箱平台，本项目支持署到 Cloudflare Workers ，降低服务器成本，搭建自己的邮箱服务
+## 项目修改说明
 
-## 项目展示
+本项目对原项目进行了以下 UI 优化：
 
-- [在线演示](https://skymail.ink)<br>
-- [部署文档](https://doc.skymail.ink)<br>
+### 🌗 主题模式升级
 
-| ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
-|-----------------------|-----------------------|
-| ![](/doc/demo/demo3.png) | ![](/doc/demo/demo4.png) |
+- **三种主题模式**：浅色模式 / 深色模式 / 跟随系统
+- **自动切换**：支持监听系统主题偏好，实时响应系统主题变化
+- **持久化保存**：用户选择的主题模式会自动保存
 
+### 📂 侧边栏优化
 
+- **默认折叠**：侧边栏默认折叠为图标模式（60px 宽度）
+- **按需展开**：点击汉堡按钮展开完整菜单
+- **颜色适配**：浅色模式下侧边栏为浅色背景，深色模式下为深色背景
+- **流畅动画**：折叠/展开采用平滑过渡动画
 
+### 🎨 现代 UI 设计
 
-## 功能介绍
+- **卡片式布局**：邮件列表采用现代卡片设计，带圆角和阴影
+- **Hover 效果**：卡片悬停有微妙的阴影提升效果
+- **统一配色**：全部使用 CSS 变量，便于主题切换
 
-- **💰 低成本使用**： 可部署到 Cloudflare Workers 降低服务器成本
+### 🔧 技术改进
 
-- **💻 响应式设计**：响应式布局自动适配PC和大部分手机端浏览器
+- **状态管理重构**：分离桌面端折叠状态与移动端抽屉状态
+- **主题 Composable**：新增 `useTheme.js` 统一管理主题逻辑
+- **代码可维护性**：移除硬编码颜色值，统一使用 CSS 变量
 
-- **📧 邮件发送**：集成Resend发送邮件，支持群发，内嵌图片和附件发送，发送状态查看
-
-- **🛡️ 管理员功能**：可以对用户，邮件进行管理，RABC权限控制对功能及使用资源限制
-
-- **📦 附件收发**：支持收发附件，使用R2对象存储保存和下载文件
-
-- **🔔 邮件推送**：接收邮件后可以转发到TG机器人或其他服务商邮箱
-
-- **📡 开放API**：支持使用API批量生成用户，多条件查询邮件 
-
-- **📈 数据可视化**：使用ECharts对系统数据详情，用户邮件增长可视化显示
-
-- **🎨 个性化设置**：可以自定义网站标题，登录背景，透明度
-
-- **🤖 人机验证**：集成Turnstile人机验证，防止人机批量注册
-
-- **📜 更多功能**：正在开发中...
-
-
-
-## 技术栈
-
-- **平台**：[Cloudflare Workers](https://developers.cloudflare.com/workers/)
-
-- **Web框架**：[Hono](https://hono.dev/)
-
-- **ORM：**[Drizzle](https://orm.drizzle.team/)
-
-- **前端框架**：[Vue3](https://vuejs.org/) 
-
-- **UI框架**：[Element Plus](https://element-plus.org/) 
-
-- **邮件推送：** [Resend](https://resend.com/)
-
-- **缓存**：[Cloudflare KV](https://developers.cloudflare.com/kv/)
-
-- **数据库**：[Cloudflare D1](https://developers.cloudflare.com/d1/)
-
-- **文件存储**：[Cloudflare R2](https://developers.cloudflare.com/r2/)
+---
 
 ## 目录结构
 
 ```
 cloud-mail
 ├── mail-worker				    # worker后端项目
-│   ├── src                  
-│   │   ├── api	 			    # api接口层			
+│   ├── src
+│   │   ├── api	 			    # api接口层
 │   │   ├── const  			    # 项目常量
 │   │   ├── dao                 # 数据访问层
 │   │   ├── email			    # 邮件处理接收
@@ -120,6 +92,7 @@ cloud-mail
 │   ├── src
 │   │   ├── axios 			    # axios配置
 │   │   ├── components			# 自定义组件
+│   │   ├── composables			# 组合式函数（新增 useTheme）
 │   │   ├── echarts			    # echarts组件导入
 │   │   ├── i18n			    # 语言国际化
 │   │   ├── init			    # 入站初始化
@@ -133,24 +106,10 @@ cloud-mail
 │   │   ├── app.vue			    # 入口组件
 │   │   ├── main.js			    # 入口js
 │   │   └── style.css			# 全局css
-│   ├── package.json			# 项目依赖
-└── └── env.release				# 项目配置
+│   └── package.json			# 项目依赖
+└── env.release					# 项目配置
 ```
-
-## 赞助
-
-<a href="https://doc.skymail.ink/support.html" >
-<img width="170px" src="./doc/images/support.png" alt="">
-</a>
 
 ## 许可证
 
-本项目采用 [MIT](LICENSE) 许可证	
-
-
-## 交流
-
-[Telegram](https://t.me/cloud_mail_tg)
-
-
-
+本项目采用 [MIT](LICENSE) 许可证
