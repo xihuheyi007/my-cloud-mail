@@ -324,7 +324,10 @@ const en = {
     searchUser: 'Search by user',
     searchEmail: 'Search by Email',
     searchSender: 'Search by Sender',
-    userEmail: 'Email Address'
+    userEmail: 'Email Address',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeSystem: 'System'
 }
 
 export default en

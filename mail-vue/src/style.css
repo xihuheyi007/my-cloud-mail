@@ -117,7 +117,14 @@ button, input, select, textarea {
     --light-ill: #F5F7FA;
     --light-border: #E4E7ED;
     --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
-    --aside-backgound: #001529;
+    --aside-background: #ffffff;
+    --aside-menu-text: #1f1f1f;
+    --aside-menu-hover-text: #1890ff;
+    --aside-title-text: #ffffff;
+    --aside-title-bg: linear-gradient(135deg, #1890ff, #3a80dd);
+    --aside-hover-bg: #f0f2f5;
+    --aside-active-bg: rgba(24, 144, 255, 0.1);
+    --aside-active-text: #1890ff;
     --loadding-background: rgba(255, 255, 255, 0.8);
     --dark-border: #CDD0D6;
     --base-fill: #F0F2F5;
@@ -140,14 +147,25 @@ button, input, select, textarea {
     --vt-y: 50%;
     --vt-duration: 520ms;
     --vt-easing: ease-out;
+
+    --card-bg: #ffffff;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --card-border: #e4e7ed;
 }
 
 .dark {
     --extra-light-fill: #191919;
     --light-ill: #262727;
     --light-border: #414243;
-    --aside-backgound: #141414;
-    --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
+    --aside-background: #141414;
+    --aside-menu-text: #ffffff;
+    --aside-menu-hover-text: #69c0ff;
+    --aside-title-text: #ffffff;
+    --aside-title-bg: linear-gradient(135deg, #1890ff, #3a80dd);
+    --aside-hover-bg: #2a2a2a;
+    --aside-active-bg: rgba(255, 255, 255, 0.08);
+    --aside-active-text: #ffffff;
     --loadding-background: rgba(0, 0, 0, 0.3);
     --dark-border: #636466;
     --base-fill: #303030;
@@ -165,10 +183,32 @@ button, input, select, textarea {
     --secondary-text-color: #A3A6AD;
     --message-block-color: rgba(30, 30, 30, 0.2);
     --el-border-color: #414243 !important;
+    --el-bg-color: #1a1a1a;
+
+    --card-bg: #262727;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --card-border: #414243;
 }
 
 .el-input {
     --el-input-text-color: var(--el-text-color-primary) !important;
+}
+
+/* 邮件卡片样式 */
+.email-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.2s ease;
+    margin: 8px 16px;
+    padding: 12px 16px;
+}
+
+.email-card:hover {
+    box-shadow: var(--card-hover-shadow);
+    transform: translateY(-1px);
 }
 
 /* 视图过渡，基于径向剪裁 */
@@ -183,19 +223,16 @@ html:not(.dark) {
     mix-blend-mode: normal;
 }
 
-/* 层级控制，确保对应方向动画在上层可见 */
 html[data-theme-to="dark"]::view-transition-new(root) { z-index: 2; }
 html[data-theme-to="dark"]::view-transition-old(root) { z-index: 1; }
 html[data-theme-to="light"]::view-transition-old(root) { z-index: 2; }
 html[data-theme-to="light"]::view-transition-new(root) { z-index: 1; }
 
-/* 切到暗色：新视图从点击点向外扩散 */
 html[data-theme-to="dark"]::view-transition-new(root) {
     clip-path: circle(0px at var(--vt-x) var(--vt-y));
     animation: vt-radial-in var(--vt-duration) var(--vt-easing) forwards;
 }
 
-/* 切到浅色：旧视图向点击点收缩 */
 html[data-theme-to="light"]::view-transition-old(root) {
     clip-path: circle(var(--vt-end-radius, 0px) at var(--vt-x) var(--vt-y));
     animation: vt-radial-out var(--vt-duration) var(--vt-easing) forwards;

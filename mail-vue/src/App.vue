@@ -13,4 +13,7 @@ import('@/icons/index.js')
 const { locale } = useI18n()
 locale.value = settingStore.lang
 watch(() => settingStore.lang, () => locale.value = settingStore.lang)
+
+import { useTheme } from '@/composables/useTheme.js'
+useTheme()
 </script>
