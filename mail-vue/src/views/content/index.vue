@@ -35,7 +35,7 @@
             <el-alert v-if="email.status === 5" :closable="false" :title="$t('delayed')" class="email-msg" type="warning" show-icon />
           </div>
           <el-scrollbar class="htm-scrollbar" :class="email.attList.length === 0 ? 'bottom-distance' : ''">
-            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" v-if="email.content" />
+            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" :dark="uiStore.isDark" v-if="email.content" />
             <pre v-else class="email-text" >{{email.text}}</pre>
           </el-scrollbar>
           <div class="att" v-if="email.attList.length > 0">

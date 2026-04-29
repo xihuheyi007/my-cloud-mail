@@ -11,6 +11,10 @@ const props = defineProps({
   html: {
     type: String,
     required: true
+  },
+  dark: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -19,17 +23,18 @@ const contentBox = ref(null)
 let shadowRoot = null
 
 function updateContent() {
-  if (!shadowRoot) return;
+  if (!shadowRoot) return
 
-  // 1. 提取 <body> 的 style 属性（如果存在）
+  const bgColor = props.dark ? '#1a1a1a' : '#FFFFFF'
+  const textColor = props.dark ? '#e0e0e0' : '#13181D'
+  const linkColor = props.dark ? '#6db3f2' : '#0E70DF'
+
   const bodyStyleRegex = /<body[^>]*style="([^"]*)"[^>]*>/i;
   const bodyStyleMatch = props.html.match(bodyStyleRegex);
   const bodyStyle = bodyStyleMatch ? bodyStyleMatch[1] : '';
 
-  // 2. 移除 <body> 标签（保留内容）
   const cleanedHtml = props.html.replace(/<\/?body[^>]*>/gi, '');
 
-  // 3. 将 body 的 style 应用到 .shadow-content
   shadowRoot.innerHTML = `
     <style>
       :host {
@@ -40,7 +45,7 @@ function updateContent() {
                     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         font-size: 14px;
         line-height: 1.5;
-        color: #13181D;
+        color: ${textColor};
         word-break: break-word;
       }
 
@@ -55,15 +60,15 @@ function updateContent() {
 
       a {
         text-decoration: none;
-        color: #0E70DF;
+        color: ${linkColor};
       }
 
       .shadow-content {
-        background: #FFFFFF;
+        background: ${bgColor};
         width: fit-content;
         height: fit-content;
         min-width: 100%;
-        ${bodyStyle ? bodyStyle : ''} /* 注入 body 的 style */
+        ${bodyStyle ? bodyStyle : ''}
       }
 
       img:not(table img) {
@@ -106,6 +111,10 @@ onMounted(() => {
 watch(() => props.html, () => {
   updateContent()
   autoScale()
+})
+
+watch(() => props.dark, () => {
+  updateContent()
 })
 </script>
 
