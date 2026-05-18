@@ -152,15 +152,15 @@ const route = useRoute();
 
 
 :deep(.el-scrollbar__wrap--hidden-default ) {
-  background: var(--aside-backgound) !important;
+  background: var(--aside-background) !important;
 }
 
 :deep(.el-menu-item) {
-  background: var(--aside-backgound);
+  background: var(--aside-background);
 }
 
 :deep(.el-menu) {
-  background: var(--aside-backgound);
+  background: var(--aside-background);
 }
 
 .el-menu {

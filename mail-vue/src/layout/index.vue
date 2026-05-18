@@ -84,6 +84,7 @@ onBeforeUnmount(() => {
   box-shadow: var(--aside-right-border);
   transform: translateX(0);
   transition: transform 150ms ease;
+  background: var(--aside-background);
 }
 
 .aside-drawer-open {
@@ -96,6 +97,7 @@ onBeforeUnmount(() => {
   transform: translateX(0);
   transition: transform 150ms ease;
   box-shadow: var(--aside-right-border);
+  background: var(--aside-background);
 }
 
 .aside-drawer-hide {
