@@ -237,7 +237,11 @@ function openSend() {
 }
 
 function changeAside() {
-  uiStore.asideShow = !uiStore.asideShow
+  if (window.innerWidth < 1025) {
+    uiStore.asideShow = !uiStore.asideShow
+  } else {
+    uiStore.asideCollapsed = !uiStore.asideCollapsed
+  }
 }
 
 function clickLogout() {
