@@ -42,6 +42,14 @@
         <el-option label="English" value="en" @pointerdown.prevent.stop="changeLang('en')"/>
       </el-select>
     </div>
+    <div class="appearance">
+      <div class="title">{{$t('appearance')}}</div>
+      <el-radio-group :model-value="uiStore.themeMode" @change="changeTheme">
+        <el-radio-button value="light">{{$t('lightMode')}}</el-radio-button>
+        <el-radio-button value="dark">{{$t('darkMode')}}</el-radio-button>
+        <el-radio-button value="system">{{$t('systemMode')}}</el-radio-button>
+      </el-radio-group>
+    </div>
     <div class="del-email" v-perm="'my:delete'">
       <div class="title">{{$t('deleteUser')}}</div>
       <div style="color: var(--regular-text-color);">
@@ -69,10 +77,12 @@ import {accountSetName} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
 import {useI18n} from "vue-i18n";
 import {useSettingStore} from "@/store/setting.js";
+import {useUiStore} from "@/store/ui.js";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
 const settingStore = useSettingStore()
+const uiStore = useUiStore()
 const userStore = useUserStore();
 const setPwdLoading = ref(false)
 const setNameShow = ref(false)
@@ -131,6 +141,10 @@ function changeLang(lang) {
   }
   localStorage.setItem('setting', JSON.stringify({...setting, lang}))
   window.location.reload()
+}
+
+function changeTheme(mode) {
+  uiStore.setThemeMode(mode)
 }
 
 const pwdShow = ref(false)
@@ -284,6 +298,13 @@ function submitPwd() {
     .language-select {
       width: 100px;
     }
+  }
+
+  .appearance {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
   }
 
   .del-email {

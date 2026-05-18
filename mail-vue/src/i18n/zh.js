@@ -337,6 +337,10 @@ const zh = {
     searchUser: '搜索用户',
     searchEmail: '搜索邮箱',
     searchSender: '搜索发件人',
-    userEmail: '用户邮箱'
+    userEmail: '用户邮箱',
+    appearance: '外观',
+    lightMode: '浅色模式',
+    darkMode: '深色模式',
+    systemMode: '跟随系统'
 }
 export default zh

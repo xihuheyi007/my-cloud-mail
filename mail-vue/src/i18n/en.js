@@ -337,7 +337,11 @@ const en = {
     searchUser: 'Search by user',
     searchEmail: 'Search by Email',
     searchSender: 'Search by Sender',
-    userEmail: 'Email Address'
+    userEmail: 'Email Address',
+    appearance: 'Appearance',
+    lightMode: 'Light',
+    darkMode: 'Dark',
+    systemMode: 'System'
 }
 
 export default en

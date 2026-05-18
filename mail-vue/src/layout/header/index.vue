@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="toolbar">
-      <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
+      <div v-if="uiStore.isDark" class="sun-icon icon-item" @click="openDark($event)">
         <Icon icon="mingcute:sun-fill"/>
       </div>
       <div v-else class="dark-icon icon-item" @click="openDark($event)">
@@ -193,11 +193,11 @@ function openNotice() {
 
 function openDark(e) {
 
-  const nextIsDark = !uiStore.dark
+  const nextIsDark = !uiStore.isDark
   const root = document.documentElement
 
   if (!document.startViewTransition) {
-    switchDark(nextIsDark, root);
+    switchTheme(nextIsDark, root);
     return
   }
 
@@ -208,28 +208,26 @@ function openDark(e) {
   const maxY = Math.max(y, window.innerHeight - y)
   const endRadius = Math.hypot(maxX, maxY)
 
-  // 标记切换目标，供 CSS 选择器使用
   root.setAttribute('data-theme-to', nextIsDark ? 'dark' : 'light')
   root.style.setProperty('--vt-x', `${x}px`)
   root.style.setProperty('--vt-y', `${y}px`)
   root.style.setProperty('--vt-end-radius', `${endRadius + 10}px`)
 
   const transition = document.startViewTransition(() => {
-    switchDark(nextIsDark, root);
+    switchTheme(nextIsDark, root);
   })
 
   transition.finished.finally(() => {
-    // 清理标记
     root.removeAttribute('data-theme-to')
   })
 }
 
-function switchDark(nextIsDark, root) {
+function switchTheme(nextIsDark, root) {
   root.setAttribute('class', nextIsDark ? 'dark' : '')
   const metaTag = document.getElementById('theme-color-meta');
-  const isMobile =  !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
+  const isMobile = !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
   metaTag.setAttribute('content', nextIsDark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
-  uiStore.dark = nextIsDark
+  uiStore.setThemeMode(nextIsDark ? 'dark' : 'light')
 }
 
 function openSend() {
