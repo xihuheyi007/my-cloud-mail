@@ -10,12 +10,26 @@
       </div>
     </div>
     <div class="toolbar">
-      <div v-if="uiStore.isDark" class="sun-icon icon-item" @click="openDark($event)">
-        <Icon icon="mingcute:sun-fill"/>
-      </div>
-      <div v-else class="dark-icon icon-item" @click="openDark($event)">
-        <Icon icon="solar:moon-linear"/>
-      </div>
+      <el-dropdown trigger="click" @command="changeThemeMode">
+        <div class="icon-item">
+          <Icon v-if="uiStore.themeMode === 'system'" icon="mdi:theme-light-dark" width="20" height="20"/>
+          <Icon v-else-if="uiStore.isDark" icon="mingcute:sun-fill" width="24" height="24"/>
+          <Icon v-else icon="solar:moon-linear" width="20" height="20"/>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="light" :class="{ 'is-active': uiStore.themeMode === 'light' }">
+              <Icon icon="solar:moon-linear" width="16" height="16" style="margin-right: 6px"/>{{$t('lightMode')}}
+            </el-dropdown-item>
+            <el-dropdown-item command="dark" :class="{ 'is-active': uiStore.themeMode === 'dark' }">
+              <Icon icon="mingcute:sun-fill" width="16" height="16" style="margin-right: 6px"/>{{$t('darkMode')}}
+            </el-dropdown-item>
+            <el-dropdown-item command="system" :class="{ 'is-active': uiStore.themeMode === 'system' }">
+              <Icon icon="mdi:theme-light-dark" width="16" height="16" style="margin-right: 6px"/>{{$t('systemMode')}}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <div class="notice icon-item" @click="openNotice">
         <Icon icon="streamline-plump:announcement-megaphone"/>
       </div>
@@ -191,43 +205,8 @@ function openNotice() {
   uiStore.showNotice()
 }
 
-function openDark(e) {
-
-  const nextIsDark = !uiStore.isDark
-  const root = document.documentElement
-
-  if (!document.startViewTransition) {
-    switchTheme(nextIsDark, root);
-    return
-  }
-
-  const x = e.clientX
-  const y = e.clientY
-
-  const maxX = Math.max(x, window.innerWidth - x)
-  const maxY = Math.max(y, window.innerHeight - y)
-  const endRadius = Math.hypot(maxX, maxY)
-
-  root.setAttribute('data-theme-to', nextIsDark ? 'dark' : 'light')
-  root.style.setProperty('--vt-x', `${x}px`)
-  root.style.setProperty('--vt-y', `${y}px`)
-  root.style.setProperty('--vt-end-radius', `${endRadius + 10}px`)
-
-  const transition = document.startViewTransition(() => {
-    switchTheme(nextIsDark, root);
-  })
-
-  transition.finished.finally(() => {
-    root.removeAttribute('data-theme-to')
-  })
-}
-
-function switchTheme(nextIsDark, root) {
-  root.setAttribute('class', nextIsDark ? 'dark' : '')
-  const metaTag = document.getElementById('theme-color-meta');
-  const isMobile = !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
-  metaTag.setAttribute('content', nextIsDark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
-  uiStore.setThemeMode(nextIsDark ? 'dark' : 'light')
+function changeThemeMode(mode) {
+  uiStore.setThemeMode(mode)
 }
 
 function openSend() {
