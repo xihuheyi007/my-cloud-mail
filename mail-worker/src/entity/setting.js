@@ -24,6 +24,7 @@ export const setting = sqliteTable('setting', {
 	ruleEmail: text('rule_email').default('').notNull(),
 	ruleType: integer('rule_type').default(0).notNull(),
 	loginOpacity: integer('login_opacity').default(0.88),
+	loginDarkenFactor: integer('login_darken_factor').default(0),
 	resendTokens: text('resend_tokens').default("{}").notNull(),
 	noticeTitle: text('notice_title').default('').notNull(),
 	noticeContent: text('notice_content').default('').notNull(),
@@ -46,6 +47,11 @@ export const setting = sqliteTable('setting', {
 	tgMsgTo: text('tg_msg_to').default('show').notNull(),
 	tgMsgText: text('tg_msg_text').default('hide').notNull(),
 	minEmailPrefix: integer('min_email_prefix').default(0).notNull(),
-	emailPrefixFilter: text('email_prefix_filter').default('').notNull()
+	emailPrefixFilter: text('email_prefix_filter').default('').notNull(),
+	blackSubject: text('black_subject').default('').notNull(),
+	blackContent: text('black_content').default('').notNull(),
+	blackFrom: text('black_from').default('').notNull(),
+	aiCode: integer('ai_code').default(1).notNull(),
+	aiCodeFilter: text('ai_code_filter').default('').notNull()
 });
 export default setting

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git merge *)",
+      "Bash(mkdir -p /tmp/my-custom)",
+      "Bash(cp mail-vue/src/layout/index.vue /tmp/my-custom/layout-index.vue)",
+      "Bash(cp mail-vue/src/store/ui.js /tmp/my-custom/store-ui.js)",
+      "Bash(cp mail-vue/src/style.css /tmp/my-custom/style.css)",
+      "Bash(cp mail-vue/src/App.vue /tmp/my-custom/App.vue)",
+      "Bash(git show *)",
+      "Bash(git ls-tree *)",
+      "Bash(cp /tmp/my-custom/layout-index.vue mail-vue/src/layout/index.vue)",
+      "Bash(cp /tmp/my-custom/store-ui.js mail-vue/src/store/ui.js)",
+      "Bash(cp /tmp/my-custom/style.css mail-vue/src/style.css)",
+      "Bash(cp /tmp/my-custom/App.vue mail-vue/src/App.vue)",
+      "Bash(cp /tmp/my-custom/README.md README.md)",
+      "Bash(git add *)"
+    ]
+  }
+}

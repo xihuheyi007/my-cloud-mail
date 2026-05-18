@@ -25,10 +25,3 @@ mail-vue/node_modules
 mail-vue/dist
 .wrangler
 .venv
-
-# Cloudflare Workers 配置（包含敏感密钥，不推送到 GitHub）
-mail-worker/wrangler-dev.toml
-mail-worker/wrangler-test.toml
-
-# npm lock file
-package-lock.json

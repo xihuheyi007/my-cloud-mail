@@ -20,7 +20,7 @@
               <div class="setting-item">
                 <div><span>{{ $t('loginDomain') }}</span></div>
                 <div>
-                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                  <el-switch @change="change" :before-change="beforeChange" :active-value="1" :inactive-value="0"
                              v-model="setting.loginDomain"/>
                 </div>
               </div>
@@ -91,6 +91,13 @@
                 <div class="title-item"><span>{{ $t('loginBoxOpacity') }}</span></div>
                 <div>
                   <el-input-number size="small" v-model="loginOpacity" @change="opacityChange" :precision="2"
+                                   :step="0.01" :max="1" :min="0"/>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="title-item"><span>{{ $t('backgroundDarken') }}</span></div>
+                <div>
+                  <el-input-number size="small" v-model="loginDarkenFactor" @change="darkenChange" :precision="2"
                                    :step="0.01" :max="1" :min="0"/>
                 </div>
               </div>
@@ -177,8 +184,11 @@
                 </div>
               </div>
               <div class="setting-item">
-                <div><span>{{ $t('resendToken') }}</span></div>
-                <div>
+                <div><span>{{ setting.hasCfEmail ? $t('cloudflareEmailSending') : $t('resendToken') }}</span></div>
+                <div v-if="setting.hasCfEmail">
+                  <span>{{ $t('enabled') }}</span>
+                </div>
+                <div v-else>
                   <el-button class="opt-button" style="margin-top: 0" @click="openResendList" size="small"
                              type="primary">
                     <Icon icon="ic:round-list" width="18" height="18"/>
@@ -186,6 +196,15 @@
                   <el-button class="opt-button" style="margin-top: 0" @click="openResendForm" size="small"
                              type="primary">
                     <Icon icon="material-symbols:add-rounded" width="16" height="16"/>
+                  </el-button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div><span>{{ $t('blackList') }}</span></div>
+                <div>
+                  <el-button class="opt-button" style="margin-top: 0" @click="openBlackListForm" size="small"
+                             type="primary">
+                    <Icon icon="fluent:settings-48-regular" width="16" height="16"/>
                   </el-button>
                 </div>
               </div>
@@ -346,6 +365,27 @@
                 <div class="forward">
                   <el-button class="opt-button" size="small" type="primary" @click="openNoticePopup">
                     <Icon icon="mynaui:click-solid" width="18" height="18"/>
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="card-title">Workers AI</div>
+            <div class="card-content">
+              <div class="setting-item">
+                <div><span>{{ $t('codeRecognition') }}</span></div>
+                <div>
+                  <el-switch @change="changeField('aiCode', $event)" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                             v-model="setting.aiCode"/>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div><span>{{ $t('codeRecognitionRules') }}</span></div>
+                <div class="forward">
+                  <el-button class="opt-button" size="small" type="primary" @click="openAiCodeFilter">
+                    <Icon icon="fluent:settings-48-regular" width="18" height="18"/>
                   </el-button>
                 </div>
               </div>
@@ -724,17 +764,55 @@
         </div>
         <div class="prefix-filter">
           <div style="margin-bottom: 10px;">{{ t('mustNotContain') }}</div>
-          <el-input-tag style="margin-bottom: 10px;" v-model="emailPrefixFilter" :placeholder="t('mustNotContainDesc')"  />
+          <el-input-tag style="margin-bottom: 10px;" v-model="emailPrefixFilter"  />
         </div>
         <el-button type="primary" style="width: 100%;" :loading="settingLoading" @click="saveEmailPrefix">{{ $t('save') }}</el-button>
+      </el-dialog>
+      <el-dialog v-model="blackFormShow" class="forward-dialog" @closed="resetBlackList">
+        <template #header>
+          <div class="forward-head">
+            <span class="forward-set-title">{{ $t('blackList') }}</span>
+            <el-tooltip effect="dark" :content="$t('blackListDesc')">
+              <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+            </el-tooltip>
+          </div>
+        </template>
+        <el-form>
+          <el-form-item :label="t('blackFromDesc')" label-position="top">
+            <el-input-tag v-model="blackListForm.blackFrom" @add-tag="banEmailAddTag"  />
+          </el-form-item>
+          <el-form-item :label="t('blackSubjectDesc')" label-position="top">
+            <el-input-tag v-model="blackListForm.blackSubject"/>
+          </el-form-item>
+          <el-form-item :label="t('blackContentDesc')" label-position="top">
+            <el-input-tag v-model="blackListForm.blackContent"/>
+          </el-form-item>
+        </el-form>
+        <el-button type="primary" style="width: 100%;" :loading="settingLoading" @click="saveBlackList">{{ $t('save') }}</el-button>
+      </el-dialog>
+      <el-dialog v-model="aiCodeFilterShow" class="forward-dialog" @closed="resetAiCodeFilter">
+        <template #header>
+          <div class="forward-head">
+            <span class="forward-set-title">{{ $t('codeRecognitionRules') }}</span>
+            <el-tooltip effect="dark" :content="$t('codeRecognitionRulesDesc')">
+              <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+            </el-tooltip>
+          </div>
+        </template>
+        <el-form>
+          <el-form-item :label="t('senderRules')" label-position="top">
+            <el-input-tag v-model="aiCodeFilter" @add-tag="aiCodeFilterAddTag"/>
+          </el-form-item>
+        </el-form>
+        <el-button type="primary" style="width: 100%;" :loading="settingLoading" @click="saveAiCodeFilter">{{ $t('save') }}</el-button>
       </el-dialog>
     </el-scrollbar>
   </div>
 </template>
 
 <script setup>
-import {computed, defineOptions, reactive, ref} from "vue";
-import {deleteBackground, setBackground, settingQuery, settingSet} from "@/request/setting.js";
+import {computed, defineOptions, nextTick, reactive, ref} from "vue";
+import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet} from "@/request/setting.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
@@ -743,7 +821,7 @@ import {Icon} from "@iconify/vue";
 import {cvtR2Url} from "@/utils/convert.js";
 import {storeToRefs} from "pinia";
 import {debounce} from 'lodash-es'
-import {isEmail} from "@/utils/verify-utils.js";
+import {isDomain, isEmail} from "@/utils/verify-utils.js";
 import loading from "@/components/loading/index.vue";
 import {getTextWidth} from "@/utils/text.js";
 import {fileToBase64} from "@/utils/file-utils.js"
@@ -754,17 +832,20 @@ defineOptions({
   name: 'sys-setting'
 })
 
-const currentVersion = 'v2.9.0'
+const currentVersion = 'v3.0.0'
 const hasUpdate = ref(false)
 let getUpdateErrorCount = 1;
 const {t, locale} = useI18n();
 const firstLoading = ref(true)
+const settingReady = ref(false)
 const backgroundImage = ref('')
 const localUpShow = ref(false)
 const accountStore = useAccountStore();
 const userStore = useUserStore();
 const editTitleShow = ref(false)
 const resendTokenFormShow = ref(false)
+const blackFormShow = ref(false)
+const aiCodeFilterShow = ref(false)
 const r2DomainShow = ref(false)
 const turnstileShow = ref(false)
 const tgSettingShow = ref(false)
@@ -781,6 +862,7 @@ const settingLoading = ref(false)
 const clearS3Loading = ref(false)
 const r2DomainInput = ref('')
 const loginOpacity = ref(0)
+const loginDarkenFactor = ref(0)
 const minEmailPrefix = ref(0)
 const emailPrefixFilter = ref([])
 const backgroundUrl = ref('')
@@ -827,6 +909,13 @@ const regKeyOptions = computed(() => [
   {label: t('optional'), value: 2},
 ])
 
+const blackListForm = ref({
+  blackSubject: [],
+  blackContent: [],
+  blackFrom: []
+})
+const aiCodeFilter = ref([])
+
 const authRefreshOptions = computed(() => [
   {label: t('disable'), value: 0},
   {label: '3s', value: 3},
@@ -859,11 +948,13 @@ getSettings()
 getUpdate()
 
 function getSettings() {
+  settingReady.value = false
   settingQuery().then(settingData => {
     setting.value = settingData
     settingStore.domainList = settingData.domainList;
     resendTokenForm.domain = setting.value.domainList[0]
     loginOpacity.value = setting.value.loginOpacity
+    loginDarkenFactor.value = normalizeFactor(setting.value.loginDarkenFactor)
     minEmailPrefix.value = setting.value.minEmailPrefix
     firstLoading.value = false
     backgroundUrl.value = setting.value.background?.startsWith('http') ? setting.value.background : ''
@@ -874,6 +965,11 @@ function getSettings() {
     resetNoticeForm()
     resetAddS3Form()
     resetEmailPrefix()
+    resetBlackList()
+    resetAiCodeFilter()
+    nextTick(() => {
+      settingReady.value = true
+    })
   })
 }
 
@@ -1138,14 +1234,38 @@ function ruleEmailSave() {
 }
 
 function doOpacityChange() {
+  if (!settingReady.value) return
   const form = {}
   form.loginOpacity = loginOpacity.value
+  editSetting(form, true)
+}
+
+function normalizeFactor(value) {
+  const factor = Number(value ?? 0)
+  if (Number.isNaN(factor)) return 0
+  return Math.min(1, Math.max(0, factor))
+}
+
+function doDarkenChange() {
+  if (!settingReady.value) return
+  const form = {}
+  form.loginDarkenFactor = normalizeFactor(loginDarkenFactor.value)
   editSetting(form, true)
 }
 
 function resetEmailPrefix() {
   minEmailPrefix.value = setting.value.minEmailPrefix
   emailPrefixFilter.value = setting.value.emailPrefixFilter
+}
+
+function resetBlackList() {
+  blackListForm.value.blackFrom = setting.value.blackFrom ? setting.value.blackFrom.split(',') : []
+  blackListForm.value.blackContent = setting.value.blackContent ? setting.value.blackContent.split(',') : []
+  blackListForm.value.blackSubject = setting.value.blackSubject ? setting.value.blackSubject.split(',') : []
+}
+
+function resetAiCodeFilter() {
+  aiCodeFilter.value = setting.value.aiCodeFilter ? setting.value.aiCodeFilter.split(',') : []
 }
 
 function saveEmailPrefix() {
@@ -1155,10 +1275,71 @@ function saveEmailPrefix() {
   editSetting(form, true)
 }
 
+function saveAiCodeFilter() {
+  editSetting({aiCodeFilter: aiCodeFilter.value + ''})
+}
+
 const opacityChange = debounce(doOpacityChange, 1000, {
   leading: false,
   trailing: true
 })
+
+const darkenChange = debounce(doDarkenChange, 1000, {
+  leading: false,
+  trailing: true
+})
+
+function saveBlackList() {
+
+  let form = {
+    blackContent: blackListForm.value.blackContent + '',
+    blackSubject: blackListForm.value.blackSubject + '',
+    blackFrom: blackListForm.value.blackFrom + ''
+  }
+
+  settingLoading.value = true
+
+  setBlackList(form).then(() => {
+    getSettings()
+    ElMessage({
+      message: t('setSuccess'),
+      type: "success",
+      plain: true
+    })
+    blackFormShow.value = false;
+  }).finally(() => {
+    settingLoading.value = false;
+  })
+}
+
+function banEmailAddTag(val) {
+  const emails = Array.from(new Set(
+      val.split(/[,，]/).map(item => item.trim()).filter(item => item)
+  ));
+
+  blackListForm.value.blackFrom.splice(blackListForm.value.blackFrom.length - 1, 1)
+
+  emails.forEach(email => {
+    if ((isEmail(email) || isDomain(email)) && !blackListForm.value.blackFrom.includes(email)) {
+      blackListForm.value.blackFrom.push(email)
+    }
+  })
+}
+
+function aiCodeFilterAddTag(val) {
+  const emails = Array.from(new Set(
+      val.split(/[,，]/).map(item => item.trim()).filter(item => item)
+  ));
+
+  aiCodeFilter.value.splice(aiCodeFilter.value.length - 1, 1)
+
+  emails.forEach(email => {
+    if ((isEmail(email) || isDomain(email)) && !aiCodeFilter.value.includes(email)) {
+      aiCodeFilter.value.push(email)
+    }
+  })
+}
+
 
 function delBackground() {
   ElMessageBox.confirm(t('delBackgroundConfirm'), {
@@ -1245,6 +1426,14 @@ function openResendForm() {
   resendTokenFormShow.value = true
 }
 
+function openBlackListForm() {
+  blackFormShow.value = true
+}
+
+function openAiCodeFilter() {
+  aiCodeFilterShow.value = true
+}
+
 function saveResendToken() {
   const settingForm = {
     resendTokens: {}
@@ -1267,12 +1456,13 @@ function cleanResendTokenForm() {
 }
 
 function beforeChange() {
-  if (settingLoading.value) return false
+  if (!settingReady.value || settingLoading.value) return false
   backupSetting()
   return true
 }
 
 function change(e) {
+  if (!settingReady.value) return
   const settingForm = {...setting.value}
   delete settingForm.siteKey
   delete settingForm.secretKey
@@ -1280,6 +1470,12 @@ function change(e) {
   delete settingForm.s3SecretKey
   delete settingForm.resendTokens
   editSetting(settingForm, false)
+}
+
+function changeField(key, value) {
+  if (!settingReady.value) return
+  setting.value[key] = value
+  editSetting({[key]: value}, false)
 }
 
 function saveTitle() {
@@ -1322,8 +1518,10 @@ function editSetting(settingForm, refreshStatus = true) {
     noticePopupShow.value = false
     addS3Show.value = false
     emailPrefixShow.value = false
+    aiCodeFilterShow.value = false
   }).catch((e) => {
     loginOpacity.value = setting.value.loginOpacity
+    loginDarkenFactor.value = normalizeFactor(setting.value.loginDarkenFactor)
     setting.value = {...setting.value, ...JSON.parse(backup)}
   }).finally(() => {
     settingLoading.value = false
@@ -1382,7 +1580,7 @@ function editSetting(settingForm, refreshStatus = true) {
 .card-grid {
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
   padding: 20px;
   gap: 20px;
   @media (max-width: 500px) {
