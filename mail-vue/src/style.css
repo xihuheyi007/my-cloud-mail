@@ -181,7 +181,7 @@ button, input, select, textarea {
     --scrollbar-track-color: #8D9095;
     --base-border-color: #4C4D4F;
     --secondary-text-color: #A3A6AD;
-    --message-block-color: rgba(30, 30, 30, 0.2);
+    --message-block-color: transparent;
     --el-border-color: #414243 !important;
     --el-bg-color: #1a1a1a;
 

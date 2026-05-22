@@ -18,6 +18,10 @@ const container = ref(null)
 const contentBox = ref(null)
 let shadowRoot = null
 
+function isDark() {
+  return document.documentElement.classList.contains('dark')
+}
+
 function updateContent() {
   if (!shadowRoot) return;
 
@@ -28,6 +32,12 @@ function updateContent() {
 
   // 2. 移除 <body> 标签（保留内容）
   const cleanedHtml = props.html.replace(/<\/?body[^>]*>/gi, '');
+
+  const dark = isDark()
+  const textColor = dark ? '#D4D4D4' : '#13181D'
+  const bgColor = dark ? '#1E1E1E' : '#FFFFFF'
+  const linkColor = dark ? '#6CB2F0' : '#0E70DF'
+  const secondaryColor = dark ? '#A0A0A0' : '#666666'
 
   // 3. 将 body 的 style 应用到 .shadow-content
   shadowRoot.innerHTML = `
@@ -40,36 +50,50 @@ function updateContent() {
                     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         font-size: 14px;
         line-height: 1.5;
-        color: #13181D;
+        color: ${textColor};
         word-break: break-word;
       }
 
       h1, h2, h3, h4 {
           font-size: 18px;
           font-weight: 700;
+          color: ${textColor};
       }
 
       p {
         margin: 0;
+        color: ${textColor};
+      }
+
+      span, div, td, th, li, label, em, strong, b, i, u, s, del, ins, mark, small, big, sub, sup {
+        color: inherit;
       }
 
       a {
         text-decoration: none;
-        color: #0E70DF;
+        color: ${linkColor};
       }
 
       .shadow-content {
-        background: #FFFFFF;
+        background: ${bgColor};
+        color: ${textColor};
         width: fit-content;
         height: fit-content;
         min-width: 100%;
-        ${bodyStyle ? bodyStyle : ''} /* 注入 body 的 style */
+        ${bodyStyle ? bodyStyle : ''}
       }
 
       img:not(table img) {
         max-width: 100%;
         height: auto !important;
       }
+
+      /* 深色模式下图片不过曝 */
+      ${dark ? `
+      img {
+        opacity: 0.92;
+      }
+      ` : ''}
 
     </style>
     <div class="shadow-content">
@@ -101,6 +125,16 @@ onMounted(() => {
   shadowRoot = container.value.attachShadow({ mode: 'open' })
   updateContent()
   autoScale()
+
+  // 监听主题切换，重新渲染 shadow DOM 样式
+  const observer = new MutationObserver(() => {
+    updateContent()
+    autoScale()
+  })
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
 })
 
 watch(() => props.html, () => {
