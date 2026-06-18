@@ -38,7 +38,7 @@ const dbInit = {
 			// Ensure migration tracking table exists
 			await c.env.db.exec(`CREATE TABLE IF NOT EXISTS _migration (
 				version TEXT PRIMARY KEY,
-				applied_at INTEGER NOT NULL DEFAULT (unixepoch())
+				applied_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
 			)`);
 
 			if (!await isMigrationApplied(c.env.db, 'init')) {
