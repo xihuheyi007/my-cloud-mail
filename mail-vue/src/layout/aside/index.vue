@@ -5,7 +5,7 @@
         <Icon icon="mdi:email-outline" width="24" height="24" />
         <div>{{settingStore.settings.title}}</div>
       </div>
-      <el-menu :collapse="false" :default-active="route.meta.name" text-color="#fff" active-text-color="#fff"
+      <el-menu :collapse="false" v-model:active="activeMenu" text-color="#fff" active-text-color="#fff"
                style="margin-top: 10px" @select="handleSelect">
         <el-menu-item index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
@@ -87,6 +87,8 @@ const route = useRoute();
 
 const managePerms = ['all-email:query', 'user:query', 'role:query', 'setting:query', 'analysis:query', 'reg-key:query']
 const hasManagePerm = computed(() => managePerms.some(key => hasPerm(key)))
+
+const activeMenu = computed(() => route.meta.name)
 
 function handleSelect(index) {
   router.push({name: index})
