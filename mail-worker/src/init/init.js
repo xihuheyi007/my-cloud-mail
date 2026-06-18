@@ -17,112 +17,116 @@ async function recordMigration(db, version) {
 
 const dbInit = {
 	async init(c) {
-
-		const ip = c.req.header('CF-Connecting-IP') || 'unknown';
-		const now = Date.now();
-		const attempts = initAttempts.get(ip) || [];
-		const recent = attempts.filter(t => now - t < INIT_WINDOW);
-		if (recent.length >= INIT_RATE_LIMIT) {
-			return c.text('Too many attempts', 429);
-		}
-		recent.push(now);
-		initAttempts.set(ip, recent);
-
-		const body = await c.req.json();
-		const secret = body.secret;
-
-		if (secret !== c.env.jwt_secret) {
-			return c.text('Unauthorized', 401);
-		}
-
-		// Ensure migration tracking table exists
-		await c.env.db.exec(`CREATE TABLE IF NOT EXISTS _migration (
-			version TEXT PRIMARY KEY,
-			applied_at INTEGER NOT NULL DEFAULT (unixepoch())
-		)`);
-
-		if (!await isMigrationApplied(c.env.db, 'init')) {
-			await this.intDB(c);
-			await recordMigration(c.env.db, 'init');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_1')) {
-			await this.v1_1DB(c);
-			await recordMigration(c.env.db, 'v1_1');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_2')) {
-			await this.v1_2DB(c);
-			await recordMigration(c.env.db, 'v1_2');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_3')) {
-			await this.v1_3DB(c);
-			await recordMigration(c.env.db, 'v1_3');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_3_1')) {
-			await this.v1_3_1DB(c);
-			await recordMigration(c.env.db, 'v1_3_1');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_4')) {
-			await this.v1_4DB(c);
-			await recordMigration(c.env.db, 'v1_4');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_5')) {
-			await this.v1_5DB(c);
-			await recordMigration(c.env.db, 'v1_5');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_6')) {
-			await this.v1_6DB(c);
-			await recordMigration(c.env.db, 'v1_6');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v1_7')) {
-			await this.v1_7DB(c);
-			await recordMigration(c.env.db, 'v1_7');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2')) {
-			await this.v2DB(c);
-			await recordMigration(c.env.db, 'v2');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_3')) {
-			await this.v2_3DB(c);
-			await recordMigration(c.env.db, 'v2_3');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_4')) {
-			await this.v2_4DB(c);
-			await recordMigration(c.env.db, 'v2_4');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_5')) {
-			await this.v2_5DB(c);
-			await recordMigration(c.env.db, 'v2_5');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_6')) {
-			await this.v2_6DB(c);
-			await recordMigration(c.env.db, 'v2_6');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_7')) {
-			await this.v2_7DB(c);
-			await recordMigration(c.env.db, 'v2_7');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_8')) {
-			await this.v2_8DB(c);
-			await recordMigration(c.env.db, 'v2_8');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v2_9')) {
-			await this.v2_9DB(c);
-			await recordMigration(c.env.db, 'v2_9');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v3_0')) {
-			await this.v3_0DB(c);
-			await recordMigration(c.env.db, 'v3_0');
-		}
-		if (!await isMigrationApplied(c.env.db, 'v3_1')) {
-			await this.v3_1DB(c);
-			await recordMigration(c.env.db, 'v3_1');
-		}
 		try {
-			await settingService.refresh(c);
+			const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+			const now = Date.now();
+			const attempts = initAttempts.get(ip) || [];
+			const recent = attempts.filter(t => now - t < INIT_WINDOW);
+			if (recent.length >= INIT_RATE_LIMIT) {
+				return c.text('Too many attempts', 429);
+			}
+			recent.push(now);
+			initAttempts.set(ip, recent);
+
+			const body = await c.req.json();
+			const secret = body.secret;
+
+			if (secret !== c.env.jwt_secret) {
+				return c.text('Unauthorized', 401);
+			}
+
+			// Ensure migration tracking table exists
+			await c.env.db.exec(`CREATE TABLE IF NOT EXISTS _migration (
+				version TEXT PRIMARY KEY,
+				applied_at INTEGER NOT NULL DEFAULT (unixepoch())
+			)`);
+
+			if (!await isMigrationApplied(c.env.db, 'init')) {
+				await this.intDB(c);
+				await recordMigration(c.env.db, 'init');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_1')) {
+				await this.v1_1DB(c);
+				await recordMigration(c.env.db, 'v1_1');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_2')) {
+				await this.v1_2DB(c);
+				await recordMigration(c.env.db, 'v1_2');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_3')) {
+				await this.v1_3DB(c);
+				await recordMigration(c.env.db, 'v1_3');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_3_1')) {
+				await this.v1_3_1DB(c);
+				await recordMigration(c.env.db, 'v1_3_1');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_4')) {
+				await this.v1_4DB(c);
+				await recordMigration(c.env.db, 'v1_4');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_5')) {
+				await this.v1_5DB(c);
+				await recordMigration(c.env.db, 'v1_5');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_6')) {
+				await this.v1_6DB(c);
+				await recordMigration(c.env.db, 'v1_6');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v1_7')) {
+				await this.v1_7DB(c);
+				await recordMigration(c.env.db, 'v1_7');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2')) {
+				await this.v2DB(c);
+				await recordMigration(c.env.db, 'v2');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_3')) {
+				await this.v2_3DB(c);
+				await recordMigration(c.env.db, 'v2_3');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_4')) {
+				await this.v2_4DB(c);
+				await recordMigration(c.env.db, 'v2_4');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_5')) {
+				await this.v2_5DB(c);
+				await recordMigration(c.env.db, 'v2_5');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_6')) {
+				await this.v2_6DB(c);
+				await recordMigration(c.env.db, 'v2_6');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_7')) {
+				await this.v2_7DB(c);
+				await recordMigration(c.env.db, 'v2_7');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_8')) {
+				await this.v2_8DB(c);
+				await recordMigration(c.env.db, 'v2_8');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v2_9')) {
+				await this.v2_9DB(c);
+				await recordMigration(c.env.db, 'v2_9');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v3_0')) {
+				await this.v3_0DB(c);
+				await recordMigration(c.env.db, 'v3_0');
+			}
+			if (!await isMigrationApplied(c.env.db, 'v3_1')) {
+				await this.v3_1DB(c);
+				await recordMigration(c.env.db, 'v3_1');
+			}
+			try {
+				await settingService.refresh(c);
+			} catch (e) {
+				console.warn(`刷新设置缓存失败：${e.message}`);
+			}
+			return c.text('success');
 		} catch (e) {
-			console.warn(`刷新设置缓存失败：${e.message}`);
+			console.error(`数据库初始化失败：${e.message}`);
+			return c.json({ code: 500, message: `Init failed: ${e.message}` }, 500);
 		}
-		return c.text('success');
 	},
 
 	async v3_1DB(c) {
