@@ -8,6 +8,10 @@ on:
       - "mail-vue/**"
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   Deploy-cloud-mail:
     name: 🏗️ Build and Deploy
