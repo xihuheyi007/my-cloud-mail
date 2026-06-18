@@ -14,7 +14,10 @@
       "Bash(cp /tmp/my-custom/style.css mail-vue/src/style.css)",
       "Bash(cp /tmp/my-custom/App.vue mail-vue/src/App.vue)",
       "Bash(cp /tmp/my-custom/README.md README.md)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npx vite *)"
     ]
   }
 }
