@@ -163,6 +163,18 @@ NProgress.configure({
     minimum: 0.1          // 最小百分比
 });
 
+function isTokenExpired(token) {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp) {
+            return Date.now() >= payload.exp * 1000;
+        }
+        return false;
+    } catch {
+        return true;
+    }
+}
+
 let timer
 let first = true
 
@@ -179,6 +191,11 @@ router.beforeEach((to, from, next) => {
     }
 
     const token = localStorage.getItem('token')
+
+    if (token && isTokenExpired(token)) {
+        localStorage.removeItem('token')
+        return next({name: 'login'})
+    }
 
     if (!token && to.name !== 'login') {
         return next({name: 'login'})

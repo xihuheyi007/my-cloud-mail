@@ -243,6 +243,7 @@ import {Icon} from "@iconify/vue";
 import skeletonBlock from "@/components/email-scroll/skeleton/index.vue"
 import EmailRow from "@/components/email-scroll/EmailRow.vue"
 import {computed, onActivated, reactive, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
+import DOMPurify from 'dompurify';
 import {useEmailStore} from "@/store/email.js";
 import {useUiStore} from "@/store/ui.js";
 import {useSettingStore} from "@/store/setting.js";
@@ -559,15 +560,9 @@ const accountShow = computed(() => {
 
 function htmlToText(email) {
   if (email.content) {
-
+    const clean = DOMPurify.sanitize(email.content, { ALLOWED_TAGS: [] });
     const tempDiv = document.createElement('div');
-
-    tempDiv.innerHTML = email.content.replace(
-        /<(img|iframe|object|embed|video|audio|source|link)[^>]*>/gi, ''
-    );
-
-    const scriptsAndStyles = tempDiv.querySelectorAll('script, style, title');
-    scriptsAndStyles.forEach(el => el.remove());
+    tempDiv.innerHTML = clean;
     let text = tempDiv.textContent || tempDiv.innerText || '';
     text = text.replace(/\s+/g, ' ').trim();
     return cleanSpace(text)

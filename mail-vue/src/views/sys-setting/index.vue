@@ -330,7 +330,7 @@
               <div class="setting-item">
                 <div><span>Site Key</span></div>
                 <div class="bot-verify">
-                  <span>{{ setting.siteKey }}</span>
+                  <span>{{ setting.siteKey ? '******' : '' }}</span>
                   <el-button class="opt-button" size="small" type="primary" @click="turnstileShow = true">
                     <Icon icon="lsicon:edit-outline" width="16" height="16"/>
                   </el-button>
@@ -339,7 +339,7 @@
               <div class="setting-item">
                 <div><span>Secret Key</span></div>
                 <div class="bot-verify">
-                  <span> {{ setting.secretKey }} </span>
+                  <span> {{ setting.secretKey ? '******' : '' }} </span>
                   <el-button class="opt-button" size="small" type="primary" @click="turnstileShow = true">
                     <Icon icon="lsicon:edit-outline" width="16" height="16"/>
                   </el-button>
@@ -638,7 +638,11 @@
           <el-table-column :min-width="emailColumnWidth" property="key" :label="$t('domain')"
                            :show-overflow-tooltip="true"/>
           <el-table-column :width="tokenColumnWidth" property="value" label="Token" fixed="right"
-                           :show-overflow-tooltip="true"/>
+                           :show-overflow-tooltip="true">
+            <template #default="{ row }">
+              <span>{{ row.value ? '******' : '' }}</span>
+            </template>
+          </el-table-column>
         </el-table>
       </el-dialog>
       <el-dialog v-model="regVerifyCountShow" :title="$t('rulesVerifyTitle',{count: regVerifyCount})"
@@ -734,9 +738,9 @@
           <el-input class="dialog-input" type="text" placeholder="Bucket" v-model="s3.bucket"/>
           <el-input class="dialog-input" type="text" placeholder="Endpoint" v-model="s3.endpoint"/>
           <el-input class="dialog-input" type="text" placeholder="Region" v-model="s3.region"/>
-          <el-input class="dialog-input" type="text" :placeholder="setting.s3AccessKey || 'Access Key'"
+          <el-input class="dialog-input" type="text" :placeholder="setting.s3AccessKey ? '******' : 'Access Key'"
                     v-model="s3.s3AccessKey"/>
-          <el-input style="margin-bottom: 10px" type="text" :placeholder="setting.s3SecretKey || 'Secret Key'" v-model="s3.s3SecretKey"/>
+          <el-input style="margin-bottom: 10px" type="text" :placeholder="setting.s3SecretKey ? '******' : 'Secret Key'" v-model="s3.s3SecretKey"/>
           <div class="force-path-style">
             <div class="force-path-style-left">
               <span>ForcePathStyle</span>

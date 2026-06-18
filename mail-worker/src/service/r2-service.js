@@ -5,6 +5,21 @@ import BizError from '../error/biz-error';
 
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024; // 25MB
 
+const ALLOWED_MIME_TYPES = [
+	'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+	'application/pdf', 'application/msword',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+	'application/vnd.ms-excel',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	'application/vnd.ms-powerpoint',
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+	'text/plain', 'text/csv', 'text/html',
+	'application/zip', 'application/x-zip-compressed',
+	'application/json', 'application/xml',
+	'audio/mpeg', 'audio/wav', 'audio/ogg',
+	'video/mp4', 'video/webm', 'video/ogg'
+];
+
 const r2Service = {
 
 	async storageType(c) {
@@ -28,6 +43,10 @@ const r2Service = {
 		const size = content?.size ?? content?.byteLength ?? content?.length;
 		if (size && size > MAX_ATTACHMENT_SIZE) {
 			throw new BizError('Attachment size exceeds limit');
+		}
+
+		if (metadata?.contentType && !ALLOWED_MIME_TYPES.includes(metadata.contentType)) {
+			throw new BizError('File type not allowed');
 		}
 
 		const storageType = await this.storageType(c);

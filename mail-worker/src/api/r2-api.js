@@ -11,6 +11,9 @@ app.get('/oss/*', async (c) => {
 	}
 
 	const key = c.req.path.split('/oss/')[1];
+	if (!key || key.includes('..') || key.startsWith('/') || key.startsWith('\\')) {
+		return c.json({ code: 400, message: 'Invalid key' }, 400);
+	}
 	const obj = await r2Service.getObj(c, key);
 	return new Response(obj.body, {
 		headers: {

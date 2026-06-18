@@ -35,15 +35,15 @@ const fileUtils = {
 	 * @returns {File} File 对象
 	 */
 	base64ToFile(base64Data, customFilename) {
-		const match = base64Data.match(/^data:(image|jpeg|video)\/([a-zA-Z0-9.+-]+);base64,/);
+		const match = base64Data.match(/^data:(image)\/(jpeg|jpg|png|gif|webp);base64,/);
 		if (!match) {
 			throw new Error('Invalid base64 data format');
 		}
 
-		const type = match[1]; // image 或 video
-		const ext = match[2];  // jpg, png, mp4 等
+		const type = match[1]; // image
+		const ext = match[2];  // jpeg, jpg, png, gif, webp
 		const mimeType = `${type}/${ext}`;
-		const cleanBase64 = base64Data.replace(/^data:(image|jpeg|video)\/[a-zA-Z0-9.+-]+;base64,/, '');
+		const cleanBase64 = base64Data.replace(/^data:(image)\/(jpeg|jpg|png|gif|webp);base64,/, '');
 
 		const byteCharacters = atob(cleanBase64);
 		const byteArrays = [];

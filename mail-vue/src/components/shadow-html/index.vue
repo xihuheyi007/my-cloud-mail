@@ -99,7 +99,7 @@ function updateContent() {
     </style>
     <div class="shadow-content">
       ${DOMPurify.sanitize(cleanedHtml, {
-        ALLOWED_TAGS: ['p','br','b','i','u','strong','em','a','img','table','tr','td','th','thead','tbody','div','span','ul','ol','li','h1','h2','h3','h4','h5','h6','blockquote','pre','code','hr','section','article','header','footer','figure','figcaption','style'],
+        ALLOWED_TAGS: ['p','br','b','i','u','strong','em','a','img','table','tr','td','th','thead','tbody','div','span','ul','ol','li','h1','h2','h3','h4','h5','h6','blockquote','pre','code','hr','section','article','header','footer','figure','figcaption'],
         ALLOWED_ATTR: ['href','src','alt','width','height','style','class','id','title','target','rel','colspan','rowspan','align','valign','bgcolor','color','face','size','dir','lang'],
       })}
     </div>

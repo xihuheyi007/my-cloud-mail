@@ -27,7 +27,7 @@ const analysisDao = {
                         SUM(CASE WHEN type = 0 AND is_del = 0 THEN 1 ELSE 0 END) AS normalReceiveTotal,
                         SUM(CASE WHEN type = 1 AND is_del = 0 THEN 1 ELSE 0 END) AS normalSendTotal
                     FROM
-                        email where status != ${emailConst.status.SAVING}
+                        email where status != ?1
                 ) e
             CROSS JOIN (
                 SELECT
@@ -45,7 +45,7 @@ const analysisDao = {
                 FROM
                     account
             ) a
-        `).all();
+        `).bind(emailConst.status.SAVING).all();
 		return results[0];
 	},
 

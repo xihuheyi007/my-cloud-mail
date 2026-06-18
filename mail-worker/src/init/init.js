@@ -125,7 +125,7 @@ const dbInit = {
 			return c.text('success');
 		} catch (e) {
 			console.error(`数据库初始化失败：${e.message}`);
-			return c.json({ code: 500, message: `Init failed: ${e.message}` }, 500);
+			return c.json({ code: 500, message: 'Init failed' }, 500);
 		}
 	},
 

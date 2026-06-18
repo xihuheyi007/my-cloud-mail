@@ -23,6 +23,24 @@ import account from "../entity/account";
 import { att } from '../entity/att';
 import telegramService from './telegram-service';
 
+function sanitizeHtml(html) {
+	if (!html) return html;
+	const { document } = parseHTML(html);
+	// Remove script tags
+	document.querySelectorAll('script').forEach(el => el.remove());
+	// Remove event handlers from all elements
+	document.querySelectorAll('*').forEach(el => {
+		for (const attr of [...el.attributes]) {
+			if (attr.name.startsWith('on')) {
+				el.removeAttribute(attr.name);
+			}
+		}
+	});
+	// Remove dangerous tags
+	document.querySelectorAll('iframe, object, embed, form, base').forEach(el => el.remove());
+	return document.toString();
+}
+
 const emailService = {
 
 	async list(c, params, userId) {
@@ -151,7 +169,7 @@ const emailService = {
 	},
 
 	receive(c, params, cidAttList, r2domain) {
-		params.content = this.imgReplace(params.content, cidAttList, r2domain)
+		params.content = sanitizeHtml(this.imgReplace(params.content, cidAttList, r2domain))
 		return orm(c).insert(email).values({ ...params }).returning().get();
 	},
 
@@ -326,7 +344,7 @@ const emailService = {
 		emailData.sendEmail = accountRow.email;
 		emailData.name = name;
 		emailData.subject = subject;
-		emailData.content = html;
+		emailData.content = sanitizeHtml(html);
 		emailData.text = text;
 		emailData.accountId = accountId;
 		emailData.status = useCloudflareEmail ? emailConst.status.DELIVERED : emailConst.status.SENT;
