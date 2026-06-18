@@ -12,7 +12,7 @@ async function isMigrationApplied(db, version) {
 }
 
 async function recordMigration(db, version) {
-	await db.prepare('INSERT INTO _migration (version) VALUES (?)').bind(version).run();
+	await db.prepare('INSERT INTO _migration (version, applied_at) VALUES (?, ?)').bind(version, Date.now()).run();
 }
 
 const dbInit = {
@@ -36,10 +36,10 @@ const dbInit = {
 			}
 
 			// Ensure migration tracking table exists
-			await c.env.db.exec(`CREATE TABLE IF NOT EXISTS _migration (
+			await c.env.db.prepare(`CREATE TABLE IF NOT EXISTS _migration (
 				version TEXT PRIMARY KEY,
-				applied_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
-			)`);
+				applied_at INTEGER NOT NULL
+			)`).run();
 
 			if (!await isMigrationApplied(c.env.db, 'init')) {
 				await this.intDB(c);
