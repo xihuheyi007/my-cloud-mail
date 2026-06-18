@@ -117,7 +117,11 @@ const dbInit = {
 			await this.v3_1DB(c);
 			await recordMigration(c.env.db, 'v3_1');
 		}
-		await settingService.refresh(c);
+		try {
+			await settingService.refresh(c);
+		} catch (e) {
+			console.warn(`刷新设置缓存失败：${e.message}`);
+		}
 		return c.text('success');
 	},
 
