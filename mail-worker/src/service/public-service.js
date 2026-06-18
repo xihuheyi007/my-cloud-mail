@@ -12,6 +12,8 @@ import reqUtils from '../utils/req-utils';
 import dayjs from 'dayjs';
 import { isDel, roleConst } from '../const/entity-const';
 import email from '../entity/email';
+import userEntity from '../entity/user';
+import account from '../entity/account';
 import userService from './user-service';
 import KvConst from '../const/kv-const';
 
@@ -19,7 +21,9 @@ const publicService = {
 
 	async emailList(c, params) {
 
-		let { toEmail, content, subject, sendName, sendEmail, timeSort, num, size, type , isDel } = params
+		let { toEmail, content, subject, sendName, sendEmail, timeSort, num, type , isDel } = params
+
+		const size = Math.min(Number(params.size) || 20, 100);
 
 		const query = orm(c).select({
 				emailId: email.emailId,
@@ -35,15 +39,10 @@ const publicService = {
 				isDel: email.isDel,
 		}).from(email)
 
-		if (!size) {
-			size = 20
-		}
-
 		if (!num) {
 			num = 1
 		}
 
-		size = Number(size);
 		num = Number(num);
 
 		num = (num - 1) * size;
@@ -124,8 +123,6 @@ const publicService = {
 		const roleList = await roleService.roleSelectUse(c);
 		const defRole = roleList.find(roleRow => roleRow.isDefault === roleConst.isDefault.OPEN);
 
-		const userList = [];
-
 		for (const emailRow of list) {
 			let { email, hash, salt, roleName } = emailRow;
 			let type = defRole.roleId;
@@ -135,27 +132,26 @@ const publicService = {
 				type = roleRow ? roleRow.roleId : type;
 			}
 
-			const userSql = `INSERT INTO user (email, password, salt, type, os, browser, active_ip, create_ip, device, active_time, create_time)
-			VALUES ('${email}', '${hash}', '${salt}', '${type}', '${os}', '${browser}', '${activeIp}', '${activeIp}', '${device}', '${activeTime}', '${activeTime}')`
+			try {
+				const result = await orm(c).insert(userEntity).values({
+					email, password: hash, salt, type, os, browser,
+					activeIp, createIp: activeIp, device,
+					activeTime, createTime: activeTime
+				}).returning({ userId: userEntity.userId }).get();
 
-			const accountSql = `INSERT INTO account (email, name, user_id)
-			VALUES ('${email}', '${emailUtils.getName(email)}', 0);`;
-
-			userList.push(c.env.db.prepare(userSql));
-			userList.push(c.env.db.prepare(accountSql));
-
-		}
-
-		userList.push(c.env.db.prepare(`UPDATE account SET user_id = (SELECT user_id FROM user WHERE user.email = account.email) WHERE user_id = 0;`))
-
-		try {
-			await c.env.db.batch(userList);
-		} catch (e) {
-			if(e.message.includes('SQLITE_CONSTRAINT')) {
-				throw new BizError(t('emailExistDatabase'))
-			} else {
-				throw e
+				await orm(c).insert(account).values({
+					email,
+					name: emailUtils.getName(email),
+					userId: result.userId
+				}).run();
+			} catch (e) {
+				if(e.message.includes('SQLITE_CONSTRAINT')) {
+					throw new BizError(t('emailExistDatabase'))
+				} else {
+					throw e
+				}
 			}
+
 		}
 
 	},

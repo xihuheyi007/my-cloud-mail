@@ -8,6 +8,15 @@ import cryptoUtils from "../utils/crypto-utils";
 
 const oauthService = {
 
+	async getAuthUrl(c) {
+		const state = crypto.randomUUID();
+		await c.env.kv.put('oauth_state:' + state, '1', { expirationTtl: 300 });
+		const clientId = encodeURIComponent(c.env.linuxdo_client_id);
+		const redirectUri = encodeURIComponent(c.env.linuxdo_callback_url);
+		const authUrl = `https://connect.linux.do/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}`;
+		return { authUrl };
+	},
+
 	async bindUser(c, params) {
 
 		const { email, oauthUserId, code } = params;
@@ -32,7 +41,17 @@ const oauthService = {
 
 	async linuxDoLogin(c, params) {
 
-		const { code } = params;
+		const { code, state } = params;
+
+		// Verify OAuth state to prevent CSRF
+		if (!state) {
+			throw new BizError('Missing OAuth state');
+		}
+		const storedState = await c.env.kv.get('oauth_state:' + state);
+		if (!storedState) {
+			throw new BizError('Invalid OAuth state');
+		}
+		await c.env.kv.delete('oauth_state:' + state);
 
 		let token = '';
 		let userInfo = {}

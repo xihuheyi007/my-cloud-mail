@@ -5,32 +5,32 @@
         <Icon icon="mdi:email-outline" width="24" height="24" />
         <div>{{settingStore.settings.title}}</div>
       </div>
-      <el-menu :collapse="false" v-model:active="activeMenu" text-color="#fff" active-text-color="#fff"
+      <el-menu :collapse="false" :default-active="activeMenu" :key="activeMenu" text-color="#fff" active-text-color="#fff"
                style="margin-top: 10px" @select="handleSelect">
         <el-menu-item index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('inbox')}}</span>
+          <span class="menu-name">{{$t('inbox')}}</span>
         </el-menu-item>
         <el-menu-item index="send" v-if="hasPerm('email:send')"
                       :class="route.meta.name === 'send' ? 'choose-item' : ''">
           <Icon icon="cil:send" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('sent')}}</span>
+          <span class="menu-name">{{$t('sent')}}</span>
         </el-menu-item>
         <el-menu-item index="draft" v-if="hasPerm('email:send')"
                       :class="route.meta.name === 'draft' ? 'choose-item' : ''">
           <Icon icon="ep:document" width="19" height="19" />
-          <span class="menu-name" style="margin-left: 22px">{{$t('drafts')}}</span>
+          <span class="menu-name">{{$t('drafts')}}</span>
         </el-menu-item>
         <el-menu-item index="star"
                       :class="route.meta.name === 'star' ? 'choose-item' : ''">
           <Icon icon="solar:star-line-duotone" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('starred')}}</span>
+          <span class="menu-name">{{$t('starred')}}</span>
         </el-menu-item>
         <el-menu-item index="setting"
                       :class="route.meta.name === 'setting' ? 'choose-item' : ''">
           <Icon icon="fluent:settings-48-regular" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('settings')}}</span>
+          <span class="menu-name">{{$t('settings')}}</span>
         </el-menu-item>
         <template v-if="hasManagePerm">
           <div class="manage-title">
@@ -39,32 +39,32 @@
           <el-menu-item index="analysis" v-if="hasPerm('analysis:query')"
                         :class="route.meta.name === 'analysis' ? 'choose-item' : ''">
             <Icon icon="fluent:data-pie-20-regular" width="24" height="24" />
-            <span class="menu-name" style="margin-left: 18px">{{$t('analytics')}}</span>
+            <span class="menu-name">{{$t('analytics')}}</span>
           </el-menu-item>
           <el-menu-item index="user" v-if="hasPerm('user:query')"
                         :class="route.meta.name === 'user' ? 'choose-item' : ''">
             <Icon icon="si:user-alt-2-line" width="20" height="20" />
-            <span class="menu-name" style="margin-left: 21px">{{$t('allUsers')}}</span>
+            <span class="menu-name">{{$t('allUsers')}}</span>
           </el-menu-item>
           <el-menu-item index="all-email" v-if="hasPerm('all-email:query')"
                         :class="route.meta.name === 'all-email' ? 'choose-item' : ''">
             <Icon icon="fluent:mail-list-28-regular" width="22" height="22" />
-            <span class="menu-name" style="margin-left: 20px">{{$t('allMail')}}</span>
+            <span class="menu-name">{{$t('allMail')}}</span>
           </el-menu-item>
           <el-menu-item index="role" v-if="hasPerm('role:query')"
                         :class="route.meta.name === 'role' ? 'choose-item' : ''">
             <Icon icon="fluent:lock-closed-16-regular" width="22" height="22" />
-            <span class="menu-name" style="margin-left: 20px">{{$t('permissions')}}</span>
+            <span class="menu-name">{{$t('permissions')}}</span>
           </el-menu-item>
           <el-menu-item index="reg-key" v-if="hasPerm('reg-key:query')"
                         :class="route.meta.name === 'reg-key' ? 'choose-item' : ''">
             <Icon icon="fluent:fingerprint-20-filled" width="22" height="22" />
-            <span class="menu-name" style="margin-left: 20px">{{$t('inviteCode')}}</span>
+            <span class="menu-name">{{$t('inviteCode')}}</span>
           </el-menu-item>
           <el-menu-item index="sys-setting" v-if="hasPerm('setting:query')"
                         :class="route.meta.name === 'sys-setting' ? 'choose-item' : ''">
-            <Icon icon="eos-icons:system-ok-outlined" width="18" height="18" style="margin-left: 2px" />
-            <span class="menu-name" style="margin-left: 22px">{{$t('SystemSettings')}}</span>
+            <Icon icon="eos-icons:system-ok-outlined" width="18" height="18" />
+            <span class="menu-name">{{$t('SystemSettings')}}</span>
           </el-menu-item>
         </template>
       </el-menu>
@@ -88,13 +88,11 @@ const route = useRoute();
 const managePerms = ['all-email:query', 'user:query', 'role:query', 'setting:query', 'analysis:query', 'reg-key:query']
 const hasManagePerm = computed(() => managePerms.some(key => hasPerm(key)))
 
-const activeMenu = computed(() => route.meta.name)
+const activeMenu = computed(() => route.meta.name || 'email')
 
 function handleSelect(index) {
+  if (route.meta.name === index) return
   router.push({name: index})
-  if (window.innerWidth < 1025) {
-    uiStore.asideShow = false
-  }
 }
 
 </script>
@@ -151,6 +149,16 @@ function handleSelect(index) {
   border-radius: 6px;
   height: 36px;
   padding: 10px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.el-menu-item :deep(.iconify) {
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .choose-item {

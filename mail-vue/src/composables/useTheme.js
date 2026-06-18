@@ -13,12 +13,9 @@ export function useTheme() {
         root.classList.toggle('dark', isDark)
         root.setAttribute('data-theme', isDark ? 'dark' : 'light')
 
-        const metaTag = document.getElementById('theme-color-meta')
-        if (metaTag) {
-            const isMobile = !window.matchMedia('(pointer: fine) and (hover: hover)').matches
-            metaTag.setAttribute('content', isDark
-                ? (isMobile ? '#141414' : '#000000')
-                : (isMobile ? '#FFFFFF' : '#F1F1F1'))
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+        if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', isDark ? '#1a1a1a' : '#ffffff')
         }
     }
 

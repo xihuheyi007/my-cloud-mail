@@ -1,4 +1,5 @@
 import { emailConst } from '../const/entity-const';
+import BizError from '../error/biz-error';
 
 const analysisDao = {
 	async numberCount(c) {
@@ -49,55 +50,64 @@ const analysisDao = {
 	},
 
 	async userDayCount(c, diffHours) {
+		const hours = Math.round(Number(diffHours));
+		if (isNaN(hours)) throw new BizError('Invalid timezone offset');
+		const modifier = hours >= 0 ? `+${hours}` : `${hours}`;
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+${diffHours} hours') AS date,
+                DATE(create_time, ?1 || ' hours') AS date,
                 COUNT(*) AS total
             FROM
                 user
             WHERE
-                DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
+                DATE(create_time, ?1 || ' hours') BETWEEN DATE('now', '-15 days', ?1 || ' hours') AND DATE('now','-1 day', ?1 || ' hours')
             GROUP BY
-                DATE(create_time,'+${diffHours} hours')
+                DATE(create_time, ?1 || ' hours')
             ORDER BY
                 date ASC
-        `).all();
+        `).bind(modifier).all();
 		return results;
 	},
 
 	async receiveDayCount(c, diffHours) {
+		const hours = Math.round(Number(diffHours));
+		if (isNaN(hours)) throw new BizError('Invalid timezone offset');
+		const modifier = hours >= 0 ? `+${hours}` : `${hours}`;
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+${diffHours} hours') AS date,
+                DATE(create_time, ?1 || ' hours') AS date,
                 COUNT(*) AS total
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
+			  				DATE(create_time, ?1 || ' hours') BETWEEN DATE('now', '-15 days', ?1 || ' hours') AND DATE('now','-1 day', ?1 || ' hours')
                 AND type = 0
             GROUP BY
-                DATE(create_time,'+${diffHours} hours')
+                DATE(create_time, ?1 || ' hours')
             ORDER BY
                 date ASC
-        `).all();
+        `).bind(modifier).all();
 		return results;
 	},
 
 	async sendDayCount(c, diffHours) {
+		const hours = Math.round(Number(diffHours));
+		if (isNaN(hours)) throw new BizError('Invalid timezone offset');
+		const modifier = hours >= 0 ? `+${hours}` : `${hours}`;
 		const { results } = await c.env.db.prepare(`
             SELECT
-                DATE(create_time,'+${diffHours} hours') AS date,
+                DATE(create_time, ?1 || ' hours') AS date,
                 COUNT(*) AS total
             FROM
                 email
             WHERE
-			  				DATE(create_time,'+${diffHours} hours') BETWEEN DATE('now', '-15 days', '+${diffHours} hours') AND DATE('now','-1 day','+${diffHours} hours')
+			  				DATE(create_time, ?1 || ' hours') BETWEEN DATE('now', '-15 days', ?1 || ' hours') AND DATE('now','-1 day', ?1 || ' hours')
                 AND type = 1
             GROUP BY
-                DATE(create_time,'+${diffHours} hours')
+                DATE(create_time, ?1 || ' hours')
             ORDER BY
                 date ASC
-        `).all();
+        `).bind(modifier).all();
 		return results;
 	}
 

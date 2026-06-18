@@ -2,10 +2,12 @@
   <div :class="accountShow && hasPerm('account:query') ? 'main-box-show' : 'main-box-hide'">
     <div :class="accountShow && hasPerm('account:query') ? 'block-show' : 'block-hide'" @click="uiStore.accountShow = false"></div>
     <account  :class="accountShow && hasPerm('account:query') ? 'show' : 'hide'" />
-    <router-view class="main-view" v-slot="{ Component,route }">
-      <keep-alive :include="['email','all-email','send','sys-setting','star','user','role','analysis','reg-key','draft']">
-        <component :is="Component" :key="route.name"/>
-      </keep-alive>
+    <router-view class="main-view" v-slot="{ Component, route }">
+      <transition name="fade" mode="out-in">
+        <keep-alive :include="['email','all-email','send','sys-setting','star','user','role','analysis','reg-key','draft']">
+          <component :is="Component" :key="route.name"/>
+        </keep-alive>
+      </transition>
     </router-view>
   </div>
 </template>
@@ -16,6 +18,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {computed, onBeforeUnmount, onMounted, watch} from "vue";
 import { useRoute } from 'vue-router'
 import { hasPerm } from "@/perm/perm.js"
+import DOMPurify from 'dompurify'
 
 const settingStore = useSettingStore()
 const uiStore = useUiStore();
@@ -71,7 +74,7 @@ function showNotice(data) {
 
   elNotification = ElNotification({
     title: data.noticeTitle,
-    message: `<div style="width: 100%;height: 100%;">${data.noticeContent}</div>`,
+    message: `<div style="width: 100%;height: 100%;">${DOMPurify.sanitize(data.noticeContent)}</div>`,
     type: data.noticeType === 'none' ? '' : data.noticeType,
     duration: data.noticeDuration,
     position: data.noticePosition,
@@ -101,6 +104,12 @@ const handleResize = () => {
 
 </script>
 <style lang="scss" scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
 
 .block-show {
   position: fixed;

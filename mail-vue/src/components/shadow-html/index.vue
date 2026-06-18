@@ -6,6 +6,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import DOMPurify from 'dompurify'
 
 const props = defineProps({
   html: {
@@ -97,7 +98,10 @@ function updateContent() {
 
     </style>
     <div class="shadow-content">
-      ${cleanedHtml}
+      ${DOMPurify.sanitize(cleanedHtml, {
+        ALLOWED_TAGS: ['p','br','b','i','u','strong','em','a','img','table','tr','td','th','thead','tbody','div','span','ul','ol','li','h1','h2','h3','h4','h5','h6','blockquote','pre','code','hr','section','article','header','footer','figure','figcaption','style'],
+        ALLOWED_ATTR: ['href','src','alt','width','height','style','class','id','title','target','rel','colspan','rowspan','align','valign','bgcolor','color','face','size','dir','lang'],
+      })}
     </div>
   `;
 }
@@ -117,8 +121,12 @@ function autoScale() {
 
   const scale = parentWidth / childWidth
 
-  const hostElement = shadowRoot.host
-  hostElement.style.zoom = scale
+  const contentEl = shadowRoot.querySelector('.shadow-content')
+  if (contentEl) {
+    contentEl.style.transform = `scale(${scale})`
+    contentEl.style.transformOrigin = 'top left'
+    contentEl.style.width = `${100 / scale}%`
+  }
 }
 
 onMounted(() => {

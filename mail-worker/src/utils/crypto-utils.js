@@ -16,15 +16,29 @@ const saltHashUtils = {
 	},
 
 	async genHashPassword(password, salt) {
-		const data = encoder.encode(salt + password);
-		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		return btoa(String.fromCharCode(...hashArray));
+		const iterations = 100000;
+		const keyMaterial = await crypto.subtle.importKey(
+			'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+		);
+		const bits = await crypto.subtle.deriveBits(
+			{ name: 'PBKDF2', salt: encoder.encode(salt), iterations, hash: 'SHA-256' },
+			keyMaterial, 256
+		);
+		const hash = Array.from(new Uint8Array(bits))
+			.map(b => b.toString(16).padStart(2, '0')).join('');
+		return `pbkdf2$${iterations}$${salt}$${hash}`;
 	},
 
 	async verifyPassword(inputPassword, salt, storedHash) {
-		const hash = await this.genHashPassword(inputPassword, salt);
-		return hash === storedHash;
+		if (storedHash.startsWith('pbkdf2$')) {
+			const newHash = await this.genHashPassword(inputPassword, salt);
+			return newHash === storedHash;
+		}
+		// Old format: SHA-256 (for backward compatibility)
+		const data = encoder.encode(salt + inputPassword);
+		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+		const oldHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
+		return oldHash === storedHash;
 	},
 
 	genRandomPwd(length = 8) {

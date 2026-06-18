@@ -11,19 +11,19 @@
       <div class="header-left" :style="'padding-left:' + actionLeft">
 
         <slot name="first"></slot>
-        <Icon class="icon reload" icon="ion:reload" width="18" height="18" @click="refresh"/>
+        <Icon class="icon reload" icon="ion:reload" width="18" height="18" @click="refresh" :aria-label="$t('refresh')"/>
         <Icon v-perm="'email:delete'" class="icon delete" icon="uiw:delete" width="16" height="16"
               v-if="getSelectedMailsIds().length > 0"
-              @click="handleDelete"/>
+              @click="handleDelete" :aria-label="$t('delete')"/>
         <Icon v-perm="'email:delete'" class="icon delete" icon="fluent:mail-read-20-regular" width="21" height="21"
               v-if="getSelectedMailsIds().length > 0 && showUnread"
-              @click="handleRead"/>
+              @click="handleRead" :aria-label="$t('markAsRead')"/>
       </div>
 
       <div class="header-right">
         <span class="email-count" v-if="total">{{ $t('emailCount', {total: total}) }}</span>
         <Icon v-if="showAccountIcon" class="more-icon icon" width="16" height="16" icon="akar-icons:dot-grid-fill"
-              @click="changeAccountShow"/>
+              @click="changeAccountShow" aria-label="Toggle account panel"/>
       </div>
     </div>
 
@@ -38,79 +38,84 @@
                         :key="keyCount"
         >
           <template #default="{ data: item, index }" >
-            <div :class="'email-row ' + props.type"
-                 :data-checked="item.checked"
-                 @click="jumpDetails(item)"
-                 v-if="!item.expand"
-                 :key="item.emailId"
-                 @contextmenu="handleContextmenu($event, item)"
-                 :style="item.rightChecked ? 'background: #FDF6EC' : ''"
+            <EmailRow
+                :type="props.type"
+                :show-star="showStar"
+                :account-show="accountShow"
+                :show-user-info="showUserInfo"
+                right-class="email-right"
+                :data-checked="item.checked"
+                :style="item.rightChecked ? 'background: #FDF6EC' : ''"
+                @click="jumpDetails(item)"
+                @contextmenu="handleContextmenu($event, item)"
+                v-if="!item.expand"
+                :key="item.emailId"
             >
-              <el-checkbox :class=" props.type === 'all-email' ? 'all-email-checkbox' : 'checkbox'"
-                           v-model="item.checked" @click.stop></el-checkbox>
-              <div @click.stop="starChange(item)" class="pc-star" v-if="showStar">
-                <Icon v-if="item.isStar" icon="fluent-color:star-16" width="20" height="20"/>
-                <Icon v-else icon="solar:star-line-duotone" width="18" height="18"/>
-              </div>
-              <div v-if="!showStar"></div>
-              <div class="title" :class="accountShow ? 'title-column' : 'title-column'">
-
-                <div class="email-sender" :style=" (showStatus ? 'gap: 10px;' : '') + ((item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : '')">
-                  <div class="email-status" v-if="showStatus">
-                    <el-tooltip effect="dark" :content="item.statusIcon.content">
-                      <Icon :icon="item.statusIcon.icon" :style="`color: ${item.statusIcon.color}`" width="20" height="20"/>
+              <template #checkbox>
+                <el-checkbox :class=" props.type === 'all-email' ? 'all-email-checkbox' : 'checkbox'"
+                             v-model="item.checked" @click.stop></el-checkbox>
+              </template>
+              <template #star>
+                <div @click.stop="starChange(item)">
+                  <Icon v-if="item.isStar" icon="fluent-color:star-16" width="20" height="20"/>
+                  <Icon v-else icon="solar:star-line-duotone" width="18" height="18"/>
+                </div>
+              </template>
+              <div class="email-sender" :style=" (showStatus ? 'gap: 10px;' : '') + ((item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : '')">
+                <div class="email-status" v-if="showStatus">
+                  <el-tooltip effect="dark" :content="item.statusIcon.content">
+                    <Icon :icon="item.statusIcon.icon" :style="`color: ${item.statusIcon.color}`" width="20" height="20"/>
+                  </el-tooltip>
+                  <div class="del-status" v-if="item.isDel">
+                    <el-tooltip effect="dark" :content="item.isDelContent">
+                      <Icon class="icon" icon="mdi:email-remove" width="20" height="20"/>
                     </el-tooltip>
-                    <div class="del-status" v-if="item.isDel">
-                      <el-tooltip effect="dark" :content="item.isDelContent">
-                        <Icon class="icon" icon="mdi:email-remove" width="20" height="20"/>
-                      </el-tooltip>
-                    </div>
                   </div>
-                  <div v-else></div>
-                  <span class="name">
-                    <span>
-                      <div class="unread" v-if="isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
-                      <slot name="name" :email="item"> {{ item.name }}</slot>
-                    </span>
-                    <span>
-                      <Icon v-if="item.isStar" icon="fluent-color:star-16" width="18" height="18"/>
+                </div>
+                <div v-else></div>
+                <span class="name">
+                  <span>
+                    <div class="unread" v-if="isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
+                    <slot name="name" :email="item"> {{ item.name }}</slot>
+                  </span>
+                  <span>
+                    <Icon v-if="item.isStar" icon="fluent-color:star-16" width="18" height="18"/>
+                  </span>
+                </span>
+                <span class="phone-time">{{ item.formatCreateTime }}</span>
+              </div>
+              <div>
+                <div class="email-text">
+                  <span class="email-subject" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : ''">
+                    <div class="unread" v-if="!isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
+                    <span v-if="item.code" class="code-tag" @click.stop="copyCode(item.code)">[{{ t('codeLabel') }}{{ item.code }}]</span>
+                    <span class="subject-text">
+                      <slot name="subject" :email="item" >
+                        {{ item.subject || '\u200B' }}
+                      </slot>
                     </span>
                   </span>
-                  <span class="phone-time">{{ item.formatCreateTime }}</span>
+                  <span class="email-content">{{ item.formatText || '\u200B' }}</span>
                 </div>
-                <div>
-                  <div class="email-text">
-                    <span class="email-subject" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : ''">
-                      <div class="unread" v-if="!isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
-                      <span v-if="item.code" class="code-tag" @click.stop="copyCode(item.code)">[{{ t('codeLabel') }}{{ item.code }}]</span>
-                      <span class="subject-text">
-                        <slot name="subject" :email="item" >
-                          {{ item.subject || '\u200B' }}
-                        </slot>
-                      </span>
+                <div class="user-info" v-if="showUserInfo">
+                  <div class="user">
+                    <span>
+                      <Icon icon="mynaui:user" width="20" height="20"/>
                     </span>
-                    <span class="email-content">{{ item.formatText || '\u200B' }}</span>
+                    <span>{{ item.userEmail }}</span>
                   </div>
-                  <div class="user-info" v-if="showUserInfo">
-                    <div class="user">
-                      <span>
-                        <Icon icon="mynaui:user" width="20" height="20"/>
-                      </span>
-                      <span>{{ item.userEmail }}</span>
-                    </div>
-                    <div class="account">
-                      <span>
-                        <Icon icon="mdi-light:email" width="20" height="20"/>
-                      </span>
-                      <span>{{ item.type === 0 ? item.toEmail : item.sendEmail }}</span>
-                    </div>
+                  <div class="account">
+                    <span>
+                      <Icon icon="mdi-light:email" width="20" height="20"/>
+                    </span>
+                    <span>{{ item.type === 0 ? item.toEmail : item.sendEmail }}</span>
                   </div>
                 </div>
               </div>
-              <div class="email-right" :style="showUserInfo ? 'align-self: start;':''">
+              <template #right>
                 <span class="email-time" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread) ? 'font-weight: bold' : ''">{{ item.formatCreateTime }}</span>
-              </div>
-            </div>
+              </template>
+            </EmailRow>
             <skeletonBlock v-else-if="item.expand === 'loading'"
                            :rows="1"
                            :showStar="showStar"
@@ -236,6 +241,7 @@
 <script setup>
 import {Icon} from "@iconify/vue";
 import skeletonBlock from "@/components/email-scroll/skeleton/index.vue"
+import EmailRow from "@/components/email-scroll/EmailRow.vue"
 import {computed, onActivated, reactive, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import {useEmailStore} from "@/store/email.js";
 import {useUiStore} from "@/store/ui.js";
@@ -316,7 +322,7 @@ let scrollTop = 0
 const latestEmail = ref(null)
 const scrollbarRef = ref(null)
 let reqLock = false
-let isMobile = ref(innerWidth < 1367)
+let isMobile = ref(innerWidth <= 768)
 let skeletonRows = 0
 const timePaddingRight = ref('');
 const keyCount = ref(0);
@@ -377,7 +383,7 @@ onUnmounted(() => {
 getEmailList()
 
 window.onresize = () => {
-  isMobile.value = innerWidth < 1367
+  isMobile.value = innerWidth <= 768
 }
 
 function onScroll(e) {
@@ -991,7 +997,7 @@ function loadData() {
   position: relative;
   transition: background 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   height: 48px;
-  @media (max-width: 1366px) {
+  @media (max-width: 768px) {
     height: 83px;
   }
 
@@ -1001,7 +1007,7 @@ function loadData() {
   }
   &.all-email {
     height: 65px;
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       height: 132px;
     }
   }
@@ -1012,7 +1018,7 @@ function loadData() {
     margin-top: 5px;
     margin-bottom: 2px;
     color: var(--email-scroll-content-color);
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       flex-direction: column;
     }
 
@@ -1053,7 +1059,7 @@ function loadData() {
     padding-left: 15px;
     padding-right: 20px;
     justify-content: center;
-    @media (min-width: 1367px) {
+    @media (min-width: 769px) {
       justify-content: start;
       height: 100%;
       align-self: start;
@@ -1062,7 +1068,7 @@ function loadData() {
   }
 
   .title-column {
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       grid-template-columns: 1fr !important;
       gap: 4px !important;
     }
@@ -1072,10 +1078,10 @@ function loadData() {
     flex: 1;
     display: grid;
     grid-template-columns: 240px 1fr;
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       padding-right: 15px;
     }
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       grid-template-columns: 1fr;
       gap: 4px;
     }
@@ -1089,7 +1095,7 @@ function loadData() {
         display: flex;
         flex-direction: column;
         align-content: center;
-        @media (max-width: 1366px) {
+        @media (max-width: 768px) {
           flex-direction: row;
           gap: 5px;
         }
@@ -1105,7 +1111,7 @@ function loadData() {
           align-items: center;
         }
 
-        @media (min-width: 1366px) {
+        @media (min-width: 769px) {
           grid-template-columns: 1fr;
           > span:last-child {
             display: none;
@@ -1130,7 +1136,7 @@ function loadData() {
       .phone-time {
         font-weight: normal;
         font-size: 12px;
-        @media (min-width: 1367px) {
+        @media (min-width: 769px) {
           display: none;
         }
       }
@@ -1140,7 +1146,7 @@ function loadData() {
       .text-skeleton-one {
         width: 80%;
         height: 16px;
-        @media (max-width: 1366px) {
+        @media (max-width: 768px) {
           width: 40%;
         }
         @media (max-width: 767px) {
@@ -1151,10 +1157,10 @@ function loadData() {
       .text-skeleton-two {
         width: min(300px, 100%);
         height: 16px;
-        @media (min-width: 1367px) {
+        @media (min-width: 769px) {
           display: none;
         }
-        @media (max-width: 1366px) {
+        @media (max-width: 768px) {
           width: 100%;
         }
       }
@@ -1163,7 +1169,7 @@ function loadData() {
     .email-text {
       display: grid;
       grid-template-columns: auto 1fr;
-      @media (max-width: 1366px) {
+      @media (max-width: 768px) {
         grid-template-columns: 1fr;
       }
 
@@ -1174,7 +1180,7 @@ function loadData() {
         overflow: hidden;
         white-space: nowrap;
         min-width: 0;
-        @media (min-width: 1367px) {
+        @media (min-width: 769px) {
           padding-left: 5px;
         }
       }
@@ -1205,7 +1211,7 @@ function loadData() {
         text-overflow: ellipsis;
         padding-left: 10px;
         color: var(--email-scroll-content-color);
-        @media (max-width: 1366px) {
+        @media (max-width: 768px) {
           padding-left: 0;
           margin-top: 0;
         }
@@ -1221,13 +1227,13 @@ function loadData() {
     display: flex;
     padding-left: 15px;
     align-items: center;
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       display: none;
     }
   }
 
   .email-right-skeleton {
-    @media (max-width: 1366px) {
+    @media (max-width: 768px) {
       display: none;
     }
   }
@@ -1252,7 +1258,7 @@ function loadData() {
   width: 40px;
 }
 
-@media (max-width: 1366px) {
+@media (max-width: 768px) {
   .pc-star {
     display: none;
   }

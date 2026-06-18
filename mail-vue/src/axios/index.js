@@ -24,6 +24,7 @@ http.interceptors.response.use((res) => {
             if (noMsg) {
 
                 data.code === 200 ? resolve(data.data) : reject(data)
+                return
 
             } else if (data.code === 401) {
                 ElMessage({
@@ -36,6 +37,7 @@ http.interceptors.response.use((res) => {
                 localStorage.removeItem('token')
                 router.replace('/login')
                 reject(data)
+                return
             } else if (data.code === 403) {
                 ElMessage({
                     message: data.message,
@@ -45,6 +47,7 @@ http.interceptors.response.use((res) => {
                     repeatNum: -4,
                 })
                 reject(data)
+                return
 
             } else if (data.code === 502) {
                 ElMessage({
@@ -56,6 +59,7 @@ http.interceptors.response.use((res) => {
                     repeatNum: -4,
                 })
                 reject(data)
+                return
             } else if (data.code !== 200) {
                 ElMessage({
                     message: data.message,
@@ -65,6 +69,7 @@ http.interceptors.response.use((res) => {
                     repeatNum: -4,
                 })
                 reject(data)
+                return
             }
             resolve(data.data)
         })

@@ -1,6 +1,9 @@
 import s3Service from './s3-service';
 import settingService from './setting-service';
 import kvObjService from './kv-obj-service';
+import BizError from '../error/biz-error';
+
+const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024; // 25MB
 
 const r2Service = {
 
@@ -21,6 +24,11 @@ const r2Service = {
 	},
 
 	async putObj(c, key, content, metadata) {
+
+		const size = content?.size ?? content?.byteLength ?? content?.length;
+		if (size && size > MAX_ATTACHMENT_SIZE) {
+			throw new BizError('Attachment size exceeds limit');
+		}
 
 		const storageType = await this.storageType(c);
 

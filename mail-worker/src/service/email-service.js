@@ -1,7 +1,7 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
 import { attConst, emailConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or, like, lte, gte } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or, like, lte, gte, not } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
@@ -87,8 +87,6 @@ const emailService = {
 			query.orderBy(desc(email.emailId));
 		}
 
-		const listQuery = query.limit(size).all();
-
 		const totalQuery = orm(c).select({ total: count() }).from(email)
 			.leftJoin(
 				account,
@@ -102,18 +100,26 @@ const emailService = {
 					eq(email.isDel, isDel.NORMAL),
 					eq(account.isDel, isDel.NORMAL)
 				)
-		).get();
+		);
 
-		const latestEmailQuery = orm(c).select().from(email).where(
-			and(
-				allReceive ? eq(1,1) : eq(email.accountId, accountId),
-				eq(email.userId, userId),
-				eq(email.type, type),
-				eq(email.isDel, isDel.NORMAL)
-			))
-			.orderBy(desc(email.emailId)).limit(1).get();
-
-		let [list, totalRow, latestEmail] = await Promise.all([listQuery, totalQuery, latestEmailQuery]);
+		let [list, totalRow, latestEmail] = await Promise.all([
+			query.limit(size).all(),
+			totalQuery.get(),
+			orm(c).select().from(email)
+				.leftJoin(
+					account,
+					eq(account.accountId, email.accountId)
+				)
+				.where(
+					and(
+						allReceive ? eq(1,1) : eq(email.accountId, accountId),
+						eq(email.userId, userId),
+						eq(email.type, type),
+						eq(email.isDel, isDel.NORMAL),
+						eq(account.isDel, isDel.NORMAL)
+				))
+				.orderBy(desc(email.emailId)).limit(1).get()
+		]);
 
 		list = list.map(item => ({
 			...item,
@@ -196,9 +202,10 @@ const emailService = {
 
 		}
 
-		//如果不是管理员，权限设置了发送次数
+		//如果不是管理员，权限设置了发送次数（使用原子SQL操作避免竞态条件）
 		if (c.env.admin !== userRow.email && roleRow.sendCount) {
 
+			// 先做静态限额检查（所有类型均适用）
 			if (userRow.sendCount >= roleRow.sendCount) {
 				if (roleRow.sendType === 'day') throw new BizError(t('daySendLimit'), 403);
 				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLimit'), 403);
@@ -207,6 +214,17 @@ const emailService = {
 			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
 				if (roleRow.sendType === 'day') throw new BizError(t('daySendLack'), 403);
 				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLack'), 403);
+			}
+
+			// internal 类型不追踪发送次数，其余类型使用原子SQL递增避免竞态
+			if (roleRow.sendType !== 'internal') {
+				const atomicResult = await c.env.db.prepare(
+					`UPDATE user SET send_count = send_count + ? WHERE user_id = ? AND send_count + ? <= ?`
+				).bind(receiveEmail.length, userId, receiveEmail.length, roleRow.sendCount).run();
+				if (atomicResult.meta.changes === 0) {
+					// 原子更新失败（并发写入导致超出限额）
+					throw new BizError(t('totalSendLimit'), 403);
+				}
 			}
 
 		}
@@ -329,27 +347,26 @@ const emailService = {
 			emailData.relation = emailRow.messageId;
 		}
 
-		//如果权限有发送次数增加用户发送次数
-		if (roleRow.sendCount && roleRow.sendType !== 'internal') {
-			await userService.incrUserSendCount(c, receiveEmail.length, userId);
+		//校验附件数量（在insert之前，避免邮件已入库但附件校验失败的数据不一致）
+		if (imageDataList.length > 10) {
+			throw new BizError(t('imageAttLimit'));
 		}
+		if (attachments?.length > 10) {
+			throw new BizError(t('attLimit'));
+		}
+
+		//发送次数已通过原子SQL操作更新，无需重复增加
 
 		//保存到数据库并返回结果
 		const emailResult = await orm(c).insert(email).values(emailData).returning().get();
 
 		//保存内嵌附件
 		if (imageDataList.length > 0) {
-			if (imageDataList.length > 10) {
-				throw new BizError(t('imageAttLimit'));
-			}
 			await attService.saveArticleAtt(c, imageDataList, userId, accountId, emailResult.emailId);
 		}
 
 		//保存普通附件
 		if (attachments?.length > 0) {
-			if (attachments.length > 10) {
-				throw new BizError(t('attLimit'));
-			}
 			await attService.saveSendAtt(c, attachments, userId, accountId, emailResult.emailId);
 		}
 
@@ -615,23 +632,29 @@ const emailService = {
 
 		}
 
-		//保存邮件
+		//保存邮件（逐个insert以获取emailId，附件批量写入）
 		const receiveEmailList = emailDataList.filter(emailRow => emailRow.status === emailConst.status.RECEIVE || emailRow.status === emailConst.status.NOONE);
 
+		const attOperations = [];
 		for (const emailData of receiveEmailList) {
 
 			const emailRow = await orm(c).insert(email).values(emailData).returning().get();
 
-			//设置附件保存
+			//构建附件批量操作
 			for (const attRow of attList) {
 				const attValues = {...attRow};
 				attValues.emailId = emailRow.emailId;
 				attValues.accountId = emailRow.accountId;
 				attValues.userId = emailRow.userId;
 				attValues.attId = null;
-				await orm(c).insert(att).values(attValues).run();
+				attOperations.push(c.env.db.insert(att).values(attValues).prepare());
 			}
 
+		}
+
+		//批量执行附件insert
+		if (attOperations.length > 0) {
+			await c.env.db.batch(attOperations);
 		}
 
 		const bouncedEmail = emailDataList.find(emailRow => emailRow.status === emailConst.status.BOUNCED);
@@ -857,9 +880,9 @@ const emailService = {
 			query.orderBy(desc(email.emailId));
 		}
 
-		const listQuery = await query.limit(size).all();
-		const totalQuery = await queryCount.get();
-		const latestEmailQuery = await orm(c).select().from(email)
+		const listQuery = query.limit(size).all();
+		const totalQuery = queryCount.get();
+		const latestEmailQuery = orm(c).select().from(email)
 			.where(and(
 				eq(email.type, emailConst.type.RECEIVE),
 				ne(email.status, emailConst.status.SAVING)
@@ -928,8 +951,17 @@ const emailService = {
 	},
 
 	async completeReceiveAll(c) {
-		await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.RECEIVE} WHERE status = ${emailConst.status.SAVING} AND EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
-		await c.env.db.prepare(`UPDATE email as e SET status = ${emailConst.status.NOONE} WHERE status = ${emailConst.status.SAVING} AND NOT EXISTS (SELECT 1 FROM account WHERE account_id = e.account_id)`).run();
+		const accountIds = orm(c).select({ accountId: account.accountId }).from(account);
+		await orm(c).update(email).set({ status: emailConst.status.RECEIVE })
+			.where(and(
+				eq(email.status, emailConst.status.SAVING),
+				inArray(email.accountId, accountIds)
+			)).run();
+		await orm(c).update(email).set({ status: emailConst.status.NOONE })
+			.where(and(
+				eq(email.status, emailConst.status.SAVING),
+				not(inArray(email.accountId, accountIds))
+			)).run();
 	},
 
 	async batchDelete(c, params) {

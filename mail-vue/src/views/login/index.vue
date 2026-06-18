@@ -776,6 +776,10 @@ function submitRegister() {
   grid-template-columns: 1fr;
 }
 
+html.dark #login-box {
+  background: linear-gradient(to bottom, #1a1a2e, #16213e, #0f3460);
+}
+
 
 #background-wrap {
   height: 100%;
@@ -824,6 +828,11 @@ function submitRegister() {
   height: 120px;
   width: 350px;
   position: relative;
+}
+
+html.dark #background-wrap,
+html.dark .cloud {
+  display: none;
 }
 
 .cloud:after,

@@ -2,34 +2,121 @@ import settingService from '../service/setting-service';
 import emailUtils from '../utils/email-utils';
 import {emailConst} from "../const/entity-const";
 
+const initAttempts = new Map();
+const INIT_RATE_LIMIT = 5;
+const INIT_WINDOW = 3600000;
+
+async function isMigrationApplied(db, version) {
+	const row = await db.prepare('SELECT 1 FROM _migration WHERE version = ?').bind(version).first();
+	return !!row;
+}
+
+async function recordMigration(db, version) {
+	await db.prepare('INSERT INTO _migration (version) VALUES (?)').bind(version).run();
+}
+
 const dbInit = {
 	async init(c) {
 
-		const secret = c.req.param('secret');
+		const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+		const now = Date.now();
+		const attempts = initAttempts.get(ip) || [];
+		const recent = attempts.filter(t => now - t < INIT_WINDOW);
+		if (recent.length >= INIT_RATE_LIMIT) {
+			return c.text('Too many attempts', 429);
+		}
+		recent.push(now);
+		initAttempts.set(ip, recent);
+
+		const body = await c.req.json();
+		const secret = body.secret;
 
 		if (secret !== c.env.jwt_secret) {
-			return c.text('❌ JWT secret mismatch');
+			return c.text('Unauthorized', 401);
 		}
 
-		await this.intDB(c);
-		await this.v1_1DB(c);
-		await this.v1_2DB(c);
-		await this.v1_3DB(c);
-		await this.v1_3_1DB(c);
-		await this.v1_4DB(c);
-		await this.v1_5DB(c);
-		await this.v1_6DB(c);
-		await this.v1_7DB(c);
-		await this.v2DB(c);
-		await this.v2_3DB(c);
-		await this.v2_4DB(c);
-		await this.v2_5DB(c);
-		await this.v2_6DB(c);
-		await this.v2_7DB(c);
-		await this.v2_8DB(c);
-		await this.v2_9DB(c);
-		await this.v3_0DB(c);
-		await this.v3_1DB(c);
+		// Ensure migration tracking table exists
+		await c.env.db.exec(`CREATE TABLE IF NOT EXISTS _migration (
+			version TEXT PRIMARY KEY,
+			applied_at INTEGER NOT NULL DEFAULT (unixepoch())
+		)`);
+
+		if (!await isMigrationApplied(c.env.db, 'init')) {
+			await this.intDB(c);
+			await recordMigration(c.env.db, 'init');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_1')) {
+			await this.v1_1DB(c);
+			await recordMigration(c.env.db, 'v1_1');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_2')) {
+			await this.v1_2DB(c);
+			await recordMigration(c.env.db, 'v1_2');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_3')) {
+			await this.v1_3DB(c);
+			await recordMigration(c.env.db, 'v1_3');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_3_1')) {
+			await this.v1_3_1DB(c);
+			await recordMigration(c.env.db, 'v1_3_1');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_4')) {
+			await this.v1_4DB(c);
+			await recordMigration(c.env.db, 'v1_4');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_5')) {
+			await this.v1_5DB(c);
+			await recordMigration(c.env.db, 'v1_5');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_6')) {
+			await this.v1_6DB(c);
+			await recordMigration(c.env.db, 'v1_6');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v1_7')) {
+			await this.v1_7DB(c);
+			await recordMigration(c.env.db, 'v1_7');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2')) {
+			await this.v2DB(c);
+			await recordMigration(c.env.db, 'v2');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_3')) {
+			await this.v2_3DB(c);
+			await recordMigration(c.env.db, 'v2_3');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_4')) {
+			await this.v2_4DB(c);
+			await recordMigration(c.env.db, 'v2_4');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_5')) {
+			await this.v2_5DB(c);
+			await recordMigration(c.env.db, 'v2_5');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_6')) {
+			await this.v2_6DB(c);
+			await recordMigration(c.env.db, 'v2_6');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_7')) {
+			await this.v2_7DB(c);
+			await recordMigration(c.env.db, 'v2_7');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_8')) {
+			await this.v2_8DB(c);
+			await recordMigration(c.env.db, 'v2_8');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v2_9')) {
+			await this.v2_9DB(c);
+			await recordMigration(c.env.db, 'v2_9');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v3_0')) {
+			await this.v3_0DB(c);
+			await recordMigration(c.env.db, 'v3_0');
+		}
+		if (!await isMigrationApplied(c.env.db, 'v3_1')) {
+			await this.v3_1DB(c);
+			await recordMigration(c.env.db, 'v3_1');
+		}
 		await settingService.refresh(c);
 		return c.text('success');
 	},

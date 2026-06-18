@@ -19,6 +19,9 @@ import dayjs from 'dayjs';
 import { toUtc } from '../utils/date-uitil';
 import { t } from '../i18n/i18n.js';
 import verifyRecordService from './verify-record-service';
+import orm from '../entity/orm';
+import user from '../entity/user';
+import { eq } from 'drizzle-orm';
 
 const loginService = {
 
@@ -53,7 +56,7 @@ const loginService = {
 			throw new BizError(t('emailLengthLimit'));
 		}
 
-		if (password.length > 30) {
+		if (password.length > 128) {
 			throw new BizError(t('pwdLengthLimit'));
 		}
 
@@ -221,12 +224,19 @@ const loginService = {
 			throw new BizError(t('isBanUser'));
 		}
 
-		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password) && !noVerifyPwd) {
+		const isValid = await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password);
+		if (!isValid && !noVerifyPwd) {
 			throw new BizError(t('IncorrectPwd'));
 		}
 
+		// Upgrading old password hash format to PBKDF2
+		if (isValid && !userRow.password.startsWith('pbkdf2$')) {
+			const newHash = await cryptoUtils.genHashPassword(password, userRow.salt);
+			await orm(c).update(user).set({ password: newHash }).where(eq(user.userId, userRow.userId)).run();
+		}
+
 		const uuid = uuidv4();
-		const jwt = await JwtUtils.generateToken(c,{ userId: userRow.userId, token: uuid });
+		const jwt = await JwtUtils.generateToken(c,{ userId: userRow.userId, token: uuid }, constant.TOKEN_EXPIRE);
 
 		let authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userRow.userId, { type: 'json' });
 
@@ -257,8 +267,9 @@ const loginService = {
 	},
 
 	async logout(c, userId) {
-		const token =userContext.getToken(c);
+		const token = await userContext.getToken(c);
 		const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
+		if (!authInfo) return; // session already expired
 		const index = authInfo.tokens.findIndex(item => item === token);
 		authInfo.tokens.splice(index, 1);
 		await c.env.kv.put(KvConst.AUTH_INFO + userId, JSON.stringify(authInfo));

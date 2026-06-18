@@ -1,6 +1,7 @@
 import orm from '../entity/orm';
 import { att } from '../entity/att';
 import { and, eq, isNull, inArray, desc } from 'drizzle-orm';
+import BizError from '../error/biz-error';
 import r2Service from './r2-service';
 import constant from '../const/constant';
 import fileUtils from '../utils/file-utils';
@@ -196,11 +197,11 @@ const attService = {
 	},
 
 	async removeByUserIds(c, userIds) {
-		await this.removeAttByField(c, 'user_id', userIds);
+		await this.removeAttByField(c, 'userId', userIds);
 	},
 
 	async removeByEmailIds(c, emailIds) {
-		await this.removeAttByField(c, 'email_id', emailIds);
+		await this.removeAttByField(c, 'emailId', emailIds);
 	},
 
 	selectByEmailIds(c, emailIds) {
@@ -213,6 +214,10 @@ const attService = {
 	},
 
 	async removeAttByField(c, fieldName, fieldValues) {
+
+		const ALLOWED_FIELDS = { userId: 'user_id', accountId: 'account_id', emailId: 'email_id' };
+		const safeField = ALLOWED_FIELDS[fieldName];
+		if (!safeField) throw new BizError('Invalid field name');
 
 		const sqlList = [];
 
@@ -228,11 +233,11 @@ const attService = {
 									 GROUP BY key
 									 HAVING COUNT (*) = 1) t
 									ON a.key = t.key
-						WHERE a.${fieldName} = ?;`
+						WHERE a.${safeField} = ?;`
 					).bind(value)
 			)
 
-			sqlList.push(c.env.db.prepare(`DELETE FROM attachments WHERE ${fieldName} = ?`).bind(value))
+			sqlList.push(c.env.db.prepare(`DELETE FROM attachments WHERE ${safeField} = ?`).bind(value))
 
 		});
 
@@ -259,7 +264,7 @@ const attService = {
 	},
 
 	async removeByAccountId(c, accountId) {
-		await this.removeAttByField(c, "account_id", [accountId])
+		await this.removeAttByField(c, "accountId", [accountId])
 	},
 
 	selectOneByKeys(c, keys) {
