@@ -104,6 +104,7 @@ const settingService = {
 
 		settingRow.s3AccessKey = settingRow.s3AccessKey ? '******' : null;
 		settingRow.s3SecretKey = settingRow.s3SecretKey ? '******' : null;
+		settingRow.tgBotToken = settingRow.tgBotToken ? '******' : null;
 		settingRow.hasR2 = !!c.env.r2
 		settingRow.hasCfEmail = !!c.env.email
 
