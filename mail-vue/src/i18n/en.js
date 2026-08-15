@@ -137,6 +137,8 @@ const en = {
     websiteSetting: 'Website',
     websiteReg: 'Sign Up',
     loginDomain: 'Hide Sign-In Domain',
+    syncDelete: 'Sync Delete',
+    syncDeleteDesc: 'When enabled, inbox and mailbox items are permanently deleted instead of soft-deleted',
     multipleEmail: 'Multiple Email Address',
     multipleEmailDesc: 'Enable this feature to allow users to add multiple email',
     customization: 'Customization',

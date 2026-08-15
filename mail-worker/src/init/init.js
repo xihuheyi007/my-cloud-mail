@@ -117,6 +117,10 @@ const dbInit = {
 				await this.v3_1DB(c);
 				await recordMigration(c.env.db, 'v3_1');
 			}
+			if (!await isMigrationApplied(c.env.db, 'v3_2')) {
+				await this.v3_2DB(c);
+				await recordMigration(c.env.db, 'v3_2');
+			}
 			try {
 				await settingService.refresh(c);
 			} catch (e) {
@@ -132,6 +136,14 @@ const dbInit = {
 	async v3_1DB(c) {
 		try {
 			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN login_darken_factor INTEGER NOT NULL DEFAULT 0;`).run();
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_2DB(c) {
+		try {
+			await c.env.db.prepare(`ALTER TABLE setting ADD COLUMN sync_delete INTEGER NOT NULL DEFAULT 1;`).run();
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);
 		}
