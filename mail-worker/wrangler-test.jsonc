@@ -1,0 +1,33 @@
+{
+	// 测试专用配置（vitest-pool-workers 使用）
+	// 注意：不要包含 [ai] binding，miniflare 本地无法解析外部 AI worker
+	"name": "cloud-mail-test",
+	"main": "src/index.js",
+	"compatibility_date": "2025-06-04",
+	"keep_vars": true,
+	"d1_databases": [
+		{
+			"binding": "db",
+			"database_name": "test",
+			"database_id": "00000000-0000-0000-0000-000000000000"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "kv",
+			"id": "test"
+		}
+	],
+	"assets": {
+		"binding": "assets",
+		"directory": "./dist",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": true
+	},
+	"vars": {
+		"ai_model": "",
+		"analysis_cache": false,
+		"jwt_secret": "test-secret",
+		"domain": ["example.com"]
+	}
+}
